@@ -1,0 +1,80 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+# Node modules
+node_modules/
+
+# Vite cache
+node_modules/.vite/
+.vite/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment files
+.env
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Yarn integrity and caches
+.yarn/*
+.yarnrc.yml
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Test output
+jest.config.js
+
+# Misc
+.cache/
+.eslintcache
+
+# OS
+Thumbs.db
+
+# Optional: lockfiles (uncomment if you don't want to commit lockfiles)
+# package-lock.json
+# yarn.lock
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
