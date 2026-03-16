@@ -1,12 +1,12 @@
 import { useAuth } from "@clerk/react"
 import { Navigate } from "react-router-dom"
-import { ClerkLoaded, ClerkLoading, ClerkDegraded, ClerkFailed } from '@clerk/react'
+import Loader from '../ui/Loader'
 
 const PublicRoute = ({ children }) => {
-  const { isLoaded, isSignedIn } = useAuth()
+    const { isLoaded, isSignedIn } = useAuth()
 
     if (!isLoaded) {
-        return <div>Loading...</div>
+        return <Loader title="Loading account…" subtitle="Checking your session and preferences" />
     }
 
     if (isSignedIn) {
@@ -17,3 +17,6 @@ const PublicRoute = ({ children }) => {
 }
 
 export default PublicRoute
+
+
+

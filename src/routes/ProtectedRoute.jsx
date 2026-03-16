@@ -1,10 +1,12 @@
 import { useAuth } from "@clerk/react"
 import { Navigate } from "react-router-dom"
+import Loader from '../ui/Loader'
+
 const ProtectedRoute = ({ children }) => {
     const { isLoaded, isSignedIn } = useAuth()
 
     if (!isLoaded) {
-        return <div>Loading...</div>
+        return <Loader title="Securing your session…" subtitle="Verifying access and loading your workspace" />
     }
 
     if (!isSignedIn) {
