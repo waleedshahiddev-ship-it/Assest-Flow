@@ -10,10 +10,22 @@ import PublicRoute from './routes/PublicRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import { SidebarProvider } from './context/SidebarContext'
+import OnboardingCheck from "./pages/OnboardingCheck"
+import Onboarding from "./pages/Onboarding"
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const theme = createTheme()
 
+
+
 const App = () => {
+
+
+  const queryClient = new QueryClient()
 
   const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -22,46 +34,62 @@ const App = () => {
   }
   return (
 
-    <SidebarProvider>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <SidebarProvider>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}
+          afterSignUpUrl="/onboarding/check"
+          signInUrl="/login"
+          signUpUrl="/register"
+          fallbackRedirectUrl="/"
+        
+        >
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <BrowserRouter>
 
-          <Routes>
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate replace to="home" />} />
-              <Route path="home" element={<Home />} />
-            </Route>
+              <Routes>
+                  {/* Onboarding routes - PUBLIC, not inside AppLayout */}
+                  <Route path="/onboarding/check" element={<OnboardingCheck />} />
+                  <Route path="/onboarding/:role" element={<Onboarding />} />
 
-            <Route
-              path="login/*"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="register/*"
-              element={
-                <PublicRoute>
-                  <Register />
-                </PublicRoute>
-              }
-            />
-          </Routes>
+                  {/* Public auth routes */}
+                  <Route
+                    path="/login/*"
+                    element={
+                      <PublicRoute>
+                        <Login />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path="/register/*"
+                    element={
+                      <PublicRoute>
+                        <Register />
+                      </PublicRoute>
+                    }
+                  />
 
-        </BrowserRouter>
-        </ThemeProvider>
-      </ClerkProvider>
-    </SidebarProvider>
+                  {/* Protected app routes - inside AppLayout - must be last */}
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Navigate replace to="/home" />} />
+                    <Route path="home" element={<Home />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </ThemeProvider>
+          </ClerkProvider>
+        </SidebarProvider>
+
+      <ReactQueryDevtools initialIsOpen={true} />
+    </QueryClientProvider>
   )
 }
 

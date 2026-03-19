@@ -37,7 +37,7 @@ const Login = () => {
                                 path="/login"
                                 routing="path"
                                 signUpUrl="/register"
-                                fallbackRedirectUrl="/home" />
+                                 />
                         </div>
 
                         <div className="mt-6 text-xs text-center text-gray-400">

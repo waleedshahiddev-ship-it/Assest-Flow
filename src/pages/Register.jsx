@@ -30,14 +30,17 @@ const Register = () => {
                         </div>
 
                         <div className="space-y-4">
-                            <SignUp appearance={{
-                                variables: { colorPrimary: '#4F46E5' },
-                                elements: { card: 'shadow-none' }
-                            }}
+                            <SignUp 
+                                appearance={{
+                                    variables: { colorPrimary: '#4F46E5' },
+                                    elements: { card: 'shadow-none' }
+                                }}
                                 path="/register"
                                 routing="path"
-                                signInUrl="/login" 
-                                fallbackRedirectUrl="/home"/>
+                                signInUrl="/login"
+                                fallbackRedirectUrl="/onboarding/check"
+                                signUpUrl="/register"
+                            />
                         </div>
 
                         <div className="mt-6 text-xs text-center text-gray-400">

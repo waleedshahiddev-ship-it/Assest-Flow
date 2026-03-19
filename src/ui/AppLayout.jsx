@@ -12,18 +12,28 @@ import Box from '@mui/material/Box'
 import { useSideBar } from '../context/SidebarContext'
 import Navbar from './Navbar'
 import SideNav from './SideNav'
-
+import { useUser } from '@clerk/react'
+import { Navigate } from "react-router-dom";
 const drawerWidth = 240
 
 export default function AppLayout() {
-    
     const { open: mobileOpen, setOpen, toggle } = useSideBar()
 
     const handleNavigate = () => setOpen(false)
 
+    const onBoarding = false // Replace with real onboarding check
+    const role = "employer" // Replace with real role check
+
+    if (!onBoarding) {
+        
+        return (
+            <Navigate to={`/onboarding/${role}`} replace />
+        )
+    }
+
     return (
         <Box sx={{ display: 'flex' }}>
-            <Navbar/>
+            <Navbar />
 
             {/* Mobile drawer */}
             <Drawer

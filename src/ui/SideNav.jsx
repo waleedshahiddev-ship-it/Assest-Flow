@@ -15,7 +15,6 @@ import WeekendIcon from '@mui/icons-material/Weekend'
 import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import { SignOutButton } from '@clerk/react'
 import LogoutButton from './LogoutButton'
 
 const navItems = [
