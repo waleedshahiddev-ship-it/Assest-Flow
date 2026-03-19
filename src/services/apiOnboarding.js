@@ -106,3 +106,24 @@ export async function createUserAndCompany(payload) {
      throw error;
    }
 }
+
+
+
+// Check the onBoaring status of the user 
+
+export async function checkOnboardingStatus(clerkId) {
+    try {
+        const { data: user, error } = await supabase
+            .from("users")
+            .select("onboarding_completed, role")
+            .eq("clerk_id", clerkId)
+            .single();
+        
+        if (error) throw new Error("Failed to check onboarding status: " + error.message);
+        
+        return user.onboarding_completed ? { onboarding: true, role: user.role } : { onboarding: false, role: user.role };
+    } catch (error) {
+        console.error("Error checking onboarding status:", error);
+        throw error;
+    }
+}

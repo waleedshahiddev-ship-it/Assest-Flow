@@ -14,6 +14,8 @@ import Navbar from './Navbar'
 import SideNav from './SideNav'
 import { useUser } from '@clerk/react'
 import { Navigate } from "react-router-dom";
+import {checkOnboardingStatus} from "../services/apiOnboarding";
+import {useQuery} from "@tanstack/react-query"
 const drawerWidth = 240
 
 export default function AppLayout() {
@@ -21,13 +23,23 @@ export default function AppLayout() {
 
     const handleNavigate = () => setOpen(false)
 
-    const onBoarding = false // Replace with real onboarding check
-    const role = "employer" // Replace with real role check
+    const {user , isLoading}    = useUser()
 
-    if (!onBoarding) {
-        
+    if (isLoading) {
+        return <div>Loading...</div>
+    }   
+
+    const { data: onboarding, isLoading: onboardingLoading } = useQuery({
+        queryKey: ['onboardingStatus', user?.id],
+        queryFn: () => checkOnboardingStatus(user.id),
+        enabled: !!user?.id
+    })
+    
+
+   
+    if (!onboardingLoading && !onboarding.onboarding) {
         return (
-            <Navigate to={`/onboarding/${role}`} replace />
+            <Navigate to={`/onboarding/${onboarding.role}`} replace />
         )
     }
 
