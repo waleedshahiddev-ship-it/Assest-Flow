@@ -17,6 +17,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { OnboardingProvider } from './context/OnboardingContext'
 
 const theme = createTheme()
 
@@ -36,18 +37,19 @@ const App = () => {
 
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <ClerkProvider publishableKey={PUBLISHABLE_KEY}
-          afterSignUpUrl="/onboarding/check"
-          signInUrl="/login"
-          signUpUrl="/register"
-          fallbackRedirectUrl="/"
-        
-        >
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <BrowserRouter>
+        <OnboardingProvider>
+          <ClerkProvider publishableKey={PUBLISHABLE_KEY}
+            afterSignUpUrl="/onboarding/check"
+            signInUrl="/login"
+            signUpUrl="/register"
+            fallbackRedirectUrl="/"
 
-              <Routes>
+          >
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <BrowserRouter>
+
+                <Routes>
                   {/* Onboarding routes - PUBLIC, not inside AppLayout */}
                   <Route path="/onboarding/check" element={<OnboardingCheck />} />
                   <Route path="/onboarding/:role" element={<Onboarding />} />
@@ -86,7 +88,8 @@ const App = () => {
               </BrowserRouter>
             </ThemeProvider>
           </ClerkProvider>
-        </SidebarProvider>
+        </OnboardingProvider>
+      </SidebarProvider>
 
       <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>

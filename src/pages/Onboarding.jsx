@@ -17,7 +17,7 @@ const Onboarding = () => {
             // invalidate any queries that need refresh (example)
             queryClient.invalidateQueries({ queryKey: ["onboarding"] });
             // navigate after success
-            navigate("/home");
+            navigate("/");
         },
         onError: (err) => {
             console.error("Onboarding error:", err);
