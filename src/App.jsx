@@ -20,14 +20,11 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { OnboardingProvider } from './context/OnboardingContext'
 
 const theme = createTheme()
+const queryClient = new QueryClient()
 
 
 
 const App = () => {
-
-
-  const queryClient = new QueryClient()
-
   const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
   if (!PUBLISHABLE_KEY) {
@@ -52,7 +49,14 @@ const App = () => {
                 <Routes>
                   {/* Onboarding routes - PUBLIC, not inside AppLayout */}
                   <Route path="/onboarding/check" element={<OnboardingCheck />} />
-                  <Route path="/onboarding/:role" element={<Onboarding />} />
+                  <Route
+                    path="/onboarding/:role"
+                    element={
+                      <ProtectedRoute>
+                        <Onboarding />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   {/* Public auth routes */}
                   <Route

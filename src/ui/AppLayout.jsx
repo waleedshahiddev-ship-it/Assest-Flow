@@ -1,9 +1,3 @@
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import EventNoteIcon from '@mui/icons-material/EventNote'
-import WeekendIcon from '@mui/icons-material/Weekend'
-import PeopleIcon from '@mui/icons-material/People'
-import SettingsIcon from '@mui/icons-material/Settings'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { Outlet } from 'react-router-dom'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
@@ -16,6 +10,7 @@ import { useUser } from '@clerk/react'
 import { Navigate } from "react-router-dom";
 import {checkOnboardingStatus} from "../services/apiOnboarding";
 import {useQuery} from "@tanstack/react-query"
+import Loader from './Loader'
 const drawerWidth = 240
 
 export default function AppLayout() {
@@ -23,24 +18,31 @@ export default function AppLayout() {
 
     const handleNavigate = () => setOpen(false)
 
-    const {user , isLoading}    = useUser()
+    const { user, isLoading } = useUser()
 
-    if (isLoading) {
-        return <div>Loading...</div>
-    }   
-
-    const { data: onboarding, isLoading: onboardingLoading } = useQuery({
+    const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } = useQuery({
         queryKey: ['onboardingStatus', user?.id],
         queryFn: () => checkOnboardingStatus(user.id),
-        enabled: !!user?.id
+        enabled: !!user?.id,
     })
-    
 
-   
-    if (!onboardingLoading && !onboarding.onboarding) {
+    if (isLoading || onboardingLoading) {
+        return <Loader title="Checking onboarding…" subtitle="Validating your onboarding status before opening the app" />
+    }
+
+    if (onboardingError) {
+        return <Navigate to="/onboarding/employer" replace />
+    }
+
+    if (onboarding && !onboarding.onboarding) {
+        const nextRole = onboarding.role || 'employer'
         return (
-            <Navigate to={`/onboarding/${onboarding.role}`} replace />
+            <Navigate to={`/onboarding/${nextRole}`} replace />
         )
+    }
+
+    if (!onboarding) {
+        return <Navigate to="/onboarding/employer" replace />
     }
 
     return (

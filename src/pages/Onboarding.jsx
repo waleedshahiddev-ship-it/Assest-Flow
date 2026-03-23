@@ -1,13 +1,34 @@
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { createUserAndCompany } from "../services/apiOnboarding";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from '@clerk/react'
+import { toast } from "sonner";
+import { schemas } from '../schemas/onboarding'
+import { formConfigs } from '../configs/onboardingForms'
+import { OnboardingForm } from '../ui/OnboardingForm'
+
+const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
+
 const Onboarding = () => {
-    const { user, isLoaded } = useUser()
+    const { user, isLoaded, isSignedIn } = useUser()
     const { role } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+
+    const normalizedRole = ALLOWED_ROLES.includes(role) ? role : "employer"
+
+    const roleSchema = schemas[normalizedRole]
+    const uiConfig = formConfigs[normalizedRole]
+
+    // based on the role decide the default values 
+
+    const defaultValues = {
+        clerkId: user?.id || "",
+        email: user?.emailAddresses?.[0]?.emailAddress || "",
+        fullName: user?.fullName || "",
+        role: normalizedRole,
+    }
 
     const mutation = useMutation({
         mutationFn: async (payload) => {
@@ -16,6 +37,7 @@ const Onboarding = () => {
         onSuccess: () => {
             // invalidate any queries that need refresh (example)
             queryClient.invalidateQueries({ queryKey: ["onboarding"] });
+            queryClient.invalidateQueries({ queryKey: ["onboardingStatus"] });
             // navigate after success
             navigate("/");
         },
@@ -24,8 +46,7 @@ const Onboarding = () => {
         },
     });
 
-    // For simplicity, using dummy data. Replace with a real form.
-    const handleOnboardingSubmit = async () => {
+    const handleSubmit = async (values) => {
         // Only proceed if user is loaded
         if (!isLoaded || !user) {
             console.error("User not loaded yet");
@@ -33,16 +54,27 @@ const Onboarding = () => {
         }
 
         const payload = {
+            ...values,
             clerkId: user.id,
-            email:
-                user.emailAddresses?.[0]?.emailAddress || "john.doe@example.com",
-            role: role || "employer",
-            fullName: user.fullName || "John Doe",
-            companyName: "Clerk",
-            industry: "Technology",
-            companySize: "1-10",
-            website: "https://acme-corp.com",
-        };
+            email: values.email || user.emailAddresses?.[0]?.emailAddress || "",
+            fullName: values.fullName || user.fullName || "",
+            role: normalizedRole,
+        }
+
+        toast("You submitted the following values:", {
+            description: (
+                <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
+                    <code>{JSON.stringify(payload, null, 2)}</code>
+                </pre>
+            ),
+            position: "bottom-right",
+            classNames: {
+                content: "flex flex-col gap-2",
+            },
+            style: {
+                "--border-radius": "calc(var(--radius)  + 4px)",
+            },
+        })
 
         mutation.mutate(payload);
     };
@@ -58,25 +90,31 @@ const Onboarding = () => {
         );
     }
 
+    if (!isSignedIn) {
+        return <Navigate to="/login" replace />
+    }
+
+    if (!roleSchema || !uiConfig) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                Unsupported onboarding role. Please use a valid role URL.
+            </div>
+        )
+    }
+
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-center mt-10">
-                Onboarding {role}
-            </h1>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+            <OnboardingForm
+                schema={roleSchema}
+                uiConfig={uiConfig}
+                defaultValues={defaultValues}
+                onSubmit={handleSubmit}
+                isSubmitting={mutation.isPending}
+            />
 
             {mutation.isError && (
-                <p style={{ color: "red" }}>{mutation.error?.message}</p>
+                <p className="mt-4 text-sm text-red-600">{mutation.error?.message || "Onboarding failed"}</p>
             )}
-
-            <div className="flex justify-center mt-6">
-                <button
-                    onClick={handleOnboardingSubmit}
-                    disabled={mutation.isPending}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-50  cursor-pointer disabled:cursor-not-allowed"
-                >
-                    {mutation.isPending ? "Setting up…" : "Submit"}
-                </button>
-            </div>
         </div>
     );
 };

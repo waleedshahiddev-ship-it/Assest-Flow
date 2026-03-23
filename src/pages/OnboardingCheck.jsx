@@ -1,15 +1,46 @@
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { useUser } from "@clerk/react"
 import { useOnboarding } from "../context/OnboardingContext"
 import { checkOnboardingStatus } from "../services/apiOnboarding"
 import { useQuery } from "@tanstack/react-query"
 import { checkInviteTokenEmail } from "../services/apiOnboarding"
 
+const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
+
 const OnboardingCheck = () => {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const { isSignedIn, isLoaded, user } = useUser()
-    const { role, token } = useOnboarding()
+    const { role, token, setOnboardingData } = useOnboarding()
+    const inviteRole = searchParams.get("role")
+    const inviteToken = searchParams.get("token")
+    const userEmail = user?.emailAddresses?.[0]?.emailAddress
+
+    const onboardingQuery = useQuery({
+        queryKey: ["onboardingStatus", user?.id],
+        queryFn: () => checkOnboardingStatus(user.id),
+        enabled: !!isLoaded && !!isSignedIn && !!user?.id,
+    })
+
+    const inviteQuery = useQuery({
+        queryKey: ["checkInviteToken", userEmail, token],
+        queryFn: () => checkInviteTokenEmail(userEmail, token),
+        enabled:
+            !!isLoaded &&
+            !!isSignedIn &&
+            !!userEmail &&
+            !!role &&
+            !!token &&
+            onboardingQuery.isSuccess &&
+            !onboardingQuery.data?.onboarding,
+    })
+
+    useEffect(() => {
+        if (inviteRole && inviteToken && ALLOWED_ROLES.includes(inviteRole)) {
+            setOnboardingData(inviteRole, inviteToken)
+        }
+    }, [inviteRole, inviteToken, setOnboardingData])
 
     useEffect(() => {
         if (!isLoaded) return
@@ -21,16 +52,14 @@ const OnboardingCheck = () => {
             return
         }
 
+        if (onboardingQuery.isLoading) return
 
-        // check if the current user has already done the onboarding 
+        if (onboardingQuery.isError) {
+            navigate("/onboarding/employer")
+            return
+        }
 
-        const { data: onboarding, isLoading: onboardingLoading } = useQuery({
-            queryKey: ['onboardingStatus', user?.id],
-            queryFn: () => checkOnboardingStatus(user.id),
-            enabled: !!user?.id
-        })
-
-        if (!onboardingLoading && onboarding.onboarding) {
+        if (onboardingQuery.data?.onboarding) {
             // if the user has already completed onboarding, redirect to home
             navigate("/")
             return
@@ -39,30 +68,28 @@ const OnboardingCheck = () => {
         // check any onbaording data exits in the onboarding react context or not 
 
         if (role && token) {
-            // find thge email address of the logged in user and compare with the email address in the onboarding context
+            if (!ALLOWED_ROLES.includes(role)) {
+                navigate("/onboarding/employer")
+                return
+            }
 
-            const userEmail = user.emailAddresses?.[0]?.emailAddress
+            if (inviteQuery.isLoading) return
 
-            // query the supabase database to check the current user email address based on the token 
-
-            const { data: tokenCheck, isLoading: tokenCheckLoading } = useQuery({
-                queryKey: ['checkInviteToken', userEmail, token],
-                queryFn: () => checkInviteTokenEmail(userEmail, token),
-                enabled: !!userEmail && !!token
-            })
-
-            if (!tokenCheckLoading) {
-                if (tokenCheck.valid) {
+            if (inviteQuery.isSuccess) {
+                if (inviteQuery.data?.valid) {
                     // if the token is valid, redirect to the onboarding page based on the role in the onboarding context
                     navigate(`/onboarding/${role}`)
                     return
-                } else {
-                    // if the token is not valid, redirect to home page with an error message
-                    console.error(tokenCheck.message)
-                    // TODO: Redirect to the /need/logout route with the error message 
-                    return
                 }
 
+                console.error(inviteQuery.data?.message || "Invalid invite token")
+                navigate("/onboarding/employer")
+                return
+            }
+
+            if (inviteQuery.isError) {
+                navigate("/onboarding/employer")
+                return
             }
         } else {
 
@@ -71,7 +98,20 @@ const OnboardingCheck = () => {
 
             navigate("/onboarding/employer")
         }
-    }, [isLoaded, isSignedIn, navigate])
+    }, [
+        isLoaded,
+        isSignedIn,
+        navigate,
+        role,
+        token,
+        onboardingQuery.isLoading,
+        onboardingQuery.isError,
+        onboardingQuery.data,
+        inviteQuery.isLoading,
+        inviteQuery.isSuccess,
+        inviteQuery.isError,
+        inviteQuery.data,
+    ])
 
     return (
         <div className="flex items-center justify-center h-screen">

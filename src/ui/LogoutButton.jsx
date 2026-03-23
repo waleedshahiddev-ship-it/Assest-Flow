@@ -4,7 +4,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import LogoutIcon from '@mui/icons-material/Logout'
 
-const LogoutButton = ({ children, className }) => {
+const LogoutButton = ({ className }) => {
   return (
     <SignOutButton>
       <ListItemButton className={className} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
