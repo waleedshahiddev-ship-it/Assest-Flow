@@ -6,44 +6,18 @@ import Box from '@mui/material/Box'
 import { useSideBar } from '../context/SidebarContext'
 import Navbar from './Navbar'
 import SideNav from './SideNav'
-import { useUser } from '@clerk/react'
-import { Navigate } from "react-router-dom";
-import {checkOnboardingStatus} from "../services/apiOnboarding";
-import {useQuery} from "@tanstack/react-query"
-import Loader from './Loader'
+
 const drawerWidth = 240
+import { useEffect } from 'react'
 
 export default function AppLayout() {
     const { open: mobileOpen, setOpen, toggle } = useSideBar()
 
     const handleNavigate = () => setOpen(false)
 
-    const { user, isLoading } = useUser()
+  
 
-    const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } = useQuery({
-        queryKey: ['onboardingStatus', user?.id],
-        queryFn: () => checkOnboardingStatus(user.id),
-        enabled: !!user?.id,
-    })
-
-    if (isLoading || onboardingLoading) {
-        return <Loader title="Checking onboarding…" subtitle="Validating your onboarding status before opening the app" />
-    }
-
-    if (onboardingError) {
-        return <Navigate to="/onboarding/employer" replace />
-    }
-
-    if (onboarding && !onboarding.onboarding) {
-        const nextRole = onboarding.role || 'employer'
-        return (
-            <Navigate to={`/onboarding/${nextRole}`} replace />
-        )
-    }
-
-    if (!onboarding) {
-        return <Navigate to="/onboarding/employer" replace />
-    }
+   
 
     return (
         <Box sx={{ display: 'flex' }}>

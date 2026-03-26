@@ -27,7 +27,7 @@ export const OnboardingForm = ({ schema, uiConfig, defaultValues = {}, onSubmit,
 
     const form = useForm({
         resolver: zodResolver(schema),
-        defaultValues,
+        defaultValues
     })
 
 
@@ -40,43 +40,45 @@ export const OnboardingForm = ({ schema, uiConfig, defaultValues = {}, onSubmit,
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form id="onboarding-form" onSubmit={form.handleSubmit(onSubmit)}>
-                    <FieldGroup>
-
-                        {
-                            uiConfig?.fields.map((uiField) => (
-                                <Controller
-                                    key={uiField.name}
-                                    name={uiField.name}
-                                    control={form.control}
-                                    render={({ field, fieldState }) => (
-                                        <Field data-invalid={fieldState.invalid}
-                                            className={uiField.hidden ? "hidden" : undefined}
-                                        >
-                                            <FieldLabel htmlFor={`onboarding-form-${uiField.name}`}>
-                                                {uiField.label}
-                                            </FieldLabel>
-                                            {/* hide via explicit `hidden` flag or render conditionally if needed */}
-                                            <Input
-                                                {...field}
-                                                id={`onboarding-form-${uiField.name}`}
-                                                aria-invalid={fieldState.invalid}
-                                                type={uiField.type || "text"}
-                                                disabled={!!uiField.readOnly}
-                                                placeholder={uiField.placeholder}
-                                                autoComplete="off"
-
-                                            />
-                                            {fieldState.invalid && (
-                                                <FieldError errors={[fieldState.error]} />
-                                            )}
-                                        </Field>
-                                    )}
-                                />
-                            ))
-                        }
-                    </FieldGroup>
-                </form>
+                {!uiConfig?.fields || uiConfig.fields.length === 0 ? (
+                    <p className="text-red-600">No form fields configured</p>
+                ) : (
+                    <form id="onboarding-form" onSubmit={form.handleSubmit(onSubmit)}>
+                        <FieldGroup>
+                            {
+                                uiConfig.fields.map((uiField) => (
+                                    <Controller
+                                        key={uiField.name}
+                                        name={uiField.name}
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}
+                                                className={uiField.hidden ? "hidden" : undefined}
+                                            >
+                                                <FieldLabel htmlFor={`onboarding-form-${uiField.name}`}>
+                                                    {uiField.label}
+                                                </FieldLabel>
+                                                {/* hide via explicit `hidden` flag or render conditionally if needed */}
+                                                <Input
+                                                    {...field}
+                                                    id={`onboarding-form-${uiField.name}`}
+                                                    aria-invalid={fieldState.invalid}
+                                                    type={uiField.type || "text"}
+                                                    disabled={!!uiField.readOnly}
+                                                    placeholder={uiField.placeholder}
+                                                    autoComplete="off"
+                                                />
+                                                {fieldState.invalid && (
+                                                    <FieldError errors={[fieldState.error]} />
+                                                )}
+                                            </Field>
+                                        )}
+                                    />
+                                ))
+                            }
+                        </FieldGroup>
+                    </form>
+                )}
             </CardContent>
             <CardFooter>
                 <Field orientation="horizontal">

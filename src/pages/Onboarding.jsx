@@ -7,38 +7,36 @@ import { toast } from "sonner";
 import { schemas } from '../schemas/onboarding'
 import { formConfigs } from '../configs/onboardingForms'
 import { OnboardingForm } from '../ui/OnboardingForm'
+import { checkOnboardingStatus } from "../services/apiOnboarding";
+import { useQuery } from "@tanstack/react-query"
+import { Typography } from "@mui/material";
+
+
 
 const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
 
 const Onboarding = () => {
-    const { user, isLoaded, isSignedIn } = useUser()
+    const { user, isLoaded, isSignedIn } = useUser();
     const { role } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const userId = user?.id;
 
-    const normalizedRole = ALLOWED_ROLES.includes(role) ? role : "employer"
+    const normalizedRole = (role || "").toLowerCase();
+    const roleSchema = schemas[normalizedRole];
+    const uiConfig = formConfigs[normalizedRole];
 
-    const roleSchema = schemas[normalizedRole]
-    const uiConfig = formConfigs[normalizedRole]
-
-    // based on the role decide the default values 
-
-    const defaultValues = {
-        clerkId: user?.id || "",
-        email: user?.emailAddresses?.[0]?.emailAddress || "",
-        fullName: user?.fullName || "",
-        role: normalizedRole,
-    }
+    const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } = useQuery({
+        queryKey: ["onboardingStatus", userId],
+        queryFn: () => checkOnboardingStatus(userId),
+        enabled: isLoaded && isSignedIn && !!userId,
+    });
 
     const mutation = useMutation({
-        mutationFn: async (payload) => {
-            return await createUserAndCompany(payload);
-        },
+        mutationFn: async (payload) => createUserAndCompany(payload),
         onSuccess: () => {
-            // invalidate any queries that need refresh (example)
             queryClient.invalidateQueries({ queryKey: ["onboarding"] });
             queryClient.invalidateQueries({ queryKey: ["onboardingStatus"] });
-            // navigate after success
             navigate("/");
         },
         onError: (err) => {
@@ -46,25 +44,29 @@ const Onboarding = () => {
         },
     });
 
+    const defaultValues = {
+        clerkId: user?.id || "",
+        email: user?.emailAddresses?.[0]?.emailAddress || "",
+        fullName: user?.fullName || "",
+        role: normalizedRole,
+        companyName: "",
+        industry: "",
+        companySize: "",
+        website: "",
+        location: "",
+        phone: "",
+    };
+
     const handleSubmit = async (values) => {
-        // Only proceed if user is loaded
         if (!isLoaded || !user) {
             console.error("User not loaded yet");
             return;
         }
 
-        const payload = {
-            ...values,
-            clerkId: user.id,
-            email: values.email || user.emailAddresses?.[0]?.emailAddress || "",
-            fullName: values.fullName || user.fullName || "",
-            role: normalizedRole,
-        }
-
         toast("You submitted the following values:", {
             description: (
                 <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-                    <code>{JSON.stringify(payload, null, 2)}</code>
+                    <code>{JSON.stringify(values, null, 2)}</code>
                 </pre>
             ),
             position: "bottom-right",
@@ -74,32 +76,45 @@ const Onboarding = () => {
             style: {
                 "--border-radius": "calc(var(--radius)  + 4px)",
             },
-        })
+        });
 
-        mutation.mutate(payload);
+        mutation.mutate(values);
     };
 
-    // Show loading message while Clerk loads the user
-    if (!isLoaded) {
+
+
+
+    if (onboardingError) {
         return (
-            <div>
-                <h1 className="text-3xl font-bold text-center mt-10">
-                    Loading…
-                </h1>
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                <Typography variant="h6" color="error">
+                    Error occurred while checking onboarding status.
+                </Typography>
             </div>
         );
     }
 
-    if (!isSignedIn) {
-        return <Navigate to="/login" replace />
+    if (onboardingLoading && onboarding?.onboarding) {
+        return <Navigate to="/" replace />;
+    }
+
+
+    if (!ALLOWED_ROLES.includes(role)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                Unsupported onboarding role. Please use a valid role URL.
+            </div>
+        );
     }
 
     if (!roleSchema || !uiConfig) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
-                Unsupported onboarding role. Please use a valid role URL.
+                <Typography variant="h6" color="error">
+                    Configuration missing for role: {role}
+                </Typography>
             </div>
-        )
+        );
     }
 
     return (

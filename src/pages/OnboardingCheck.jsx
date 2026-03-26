@@ -10,12 +10,10 @@ const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
 
 const OnboardingCheck = () => {
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
     const { isSignedIn, isLoaded, user } = useUser()
-    const { role, token, setOnboardingData } = useOnboarding()
-    const inviteRole = searchParams.get("role")
-    const inviteToken = searchParams.get("token")
     const userEmail = user?.emailAddresses?.[0]?.emailAddress
+
+    const { role, token } = useOnboarding()
 
     const onboardingQuery = useQuery({
         queryKey: ["onboardingStatus", user?.id],
@@ -36,11 +34,6 @@ const OnboardingCheck = () => {
             !onboardingQuery.data?.onboarding,
     })
 
-    useEffect(() => {
-        if (inviteRole && inviteToken && ALLOWED_ROLES.includes(inviteRole)) {
-            setOnboardingData(inviteRole, inviteToken)
-        }
-    }, [inviteRole, inviteToken, setOnboardingData])
 
     useEffect(() => {
         if (!isLoaded) return
@@ -55,7 +48,7 @@ const OnboardingCheck = () => {
         if (onboardingQuery.isLoading) return
 
         if (onboardingQuery.isError) {
-            navigate("/onboarding/employer")
+            console.error("Failed to check onboarding status")
             return
         }
 
@@ -69,7 +62,7 @@ const OnboardingCheck = () => {
 
         if (role && token) {
             if (!ALLOWED_ROLES.includes(role)) {
-                navigate("/onboarding/employer")
+                console.error("Invalid role in onboarding context:", role)
                 return
             }
 
@@ -83,18 +76,20 @@ const OnboardingCheck = () => {
                 }
 
                 console.error(inviteQuery.data?.message || "Invalid invite token")
-                navigate("/onboarding/employer")
+                console.error("Invalid role in onboarding context:", role)
                 return
             }
 
             if (inviteQuery.isError) {
-                navigate("/onboarding/employer")
+                console.error("Error occurred while checking invite token:", inviteQuery.error)
                 return
             }
         } else {
 
             // if there is no onboarding data in the context, 
             // redirect to the employer onbaording page 
+            // as the employer needs no invite token to onboard and can start the 
+            // onboarding process by creating a company and then inviting other users to join the company
 
             navigate("/onboarding/employer")
         }

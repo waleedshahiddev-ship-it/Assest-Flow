@@ -104,6 +104,7 @@ export async function checkOnboardingStatus(clerkId) {
             return { onboarding: false, role: null };
         }
 
+
         return user.onboarding_completed
             ? { onboarding: true, role: user.role }
             : { onboarding: false, role: user.role };
