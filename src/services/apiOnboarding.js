@@ -152,7 +152,7 @@ export async function getUserRole(userId){
         const {data, error} = await supabase
             .from("users")
             .select("*")
-            .eq("id",userId)
+            .eq("clerk_id",userId)
             .single()
         
         if(error) throw new Error("Failed to check the user role: " + error.message)

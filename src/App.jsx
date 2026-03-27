@@ -19,6 +19,7 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { OnboardingProvider } from './context/OnboardingContext'
 import Invites from './pages/Invites'
+import InviteEmployer from './pages/InviteEmployer'
 
 const theme = createTheme()
 const queryClient = new QueryClient()
@@ -89,6 +90,7 @@ const App = () => {
                     <Route index element={<Navigate replace to="/home" />} />
                     <Route path="home" element={<Home />} />
                     <Route path="invites" element={<Invites />} />
+                    <Route path="invites/employer" element={<InviteEmployer />} />
                   </Route>
                 </Routes>
               </BrowserRouter>
