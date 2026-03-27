@@ -11,36 +11,39 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import EventNoteIcon from '@mui/icons-material/EventNote'
-import WeekendIcon from '@mui/icons-material/Weekend'
-import PeopleIcon from '@mui/icons-material/People'
-import SettingsIcon from '@mui/icons-material/Settings'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import LogoutButton from './LogoutButton'
+
+
 
 const navItems = [
   { to: 'home', label: 'Dashboard', icon: <DashboardIcon /> },
-  { to: 'bookings', label: 'Bookings', icon: <EventNoteIcon /> },
-  { to: 'cabins', label: 'Cabins', icon: <WeekendIcon /> },
-  { to: 'users', label: 'Users', icon: <PeopleIcon /> },
-  { to: 'settings', label: 'Settings', icon: <SettingsIcon /> },
-  { to: 'account', label: 'Account', icon: <AccountCircleIcon /> },
+  { to: "invites", label: "Invites", icon: <EventNoteIcon /> },
 ]
 
 export default function SideNav({ onNavigate }) {
   return (
-    <div>
-      <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>AF</Box>
+    <Box className="flex h-full flex-col">
+      <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 2, bgcolor: "#383838", fontStyle: { color: "white" , fontFamily:"-apple-system"} }}>
         <Box>
-          <Typography variant="subtitle1">Asset Flow</Typography>
-          <Typography variant="caption" color="text.secondary">Asset management</Typography>
+          <h1 className='text-[22px] font-bold'>Assest Flow</h1>
         </Box>
       </Toolbar>
       <Divider />
-      <List>
+      <List className="flex-1 px-2 py-3">
         {navItems.map((item) => (
           <ListItem key={item.to} disablePadding>
-            <ListItemButton component={NavLink} to={item.to} onClick={onNavigate} sx={{ '&.active': { bgcolor: 'action.selected' } }}>
+            <ListItemButton
+              component={NavLink}
+              to={item.to}
+              onClick={onNavigate}
+              sx={{
+                borderRadius: 2,
+                '&.active': {
+                  bgcolor: 'action.selected',
+                  fontWeight: 600,
+                },
+              }}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.label} />
             </ListItemButton>
@@ -49,11 +52,11 @@ export default function SideNav({ onNavigate }) {
       </List>
 
       <Divider />
-      <List>
+      <List className="p-2">
         <ListItem disablePadding>
           <LogoutButton className="w-full" />
         </ListItem>
       </List>
-    </div>
+    </Box>
   )
 }

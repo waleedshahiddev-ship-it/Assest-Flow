@@ -1,27 +1,26 @@
 import { Outlet } from 'react-router-dom'
 import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
 import Drawer from '@mui/material/Drawer'
 import Box from '@mui/material/Box'
 import { useSideBar } from '../context/SidebarContext'
 import Navbar from './Navbar'
 import SideNav from './SideNav'
 
-const drawerWidth = 240
-import { useEffect } from 'react'
+const drawerWidth = 260
 
 export default function AppLayout() {
     const { open: mobileOpen, setOpen, toggle } = useSideBar()
+    const desktopContentWidth = `calc(100% - ${drawerWidth}px)`
 
     const handleNavigate = () => setOpen(false)
 
-  
 
-   
+
+
 
     return (
-        <Box sx={{ display: 'flex' }}>
-            <Navbar />
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+            <Navbar drawerWidth={drawerWidth} />
 
             {/* Mobile drawer */}
             <Drawer
@@ -37,24 +36,36 @@ export default function AppLayout() {
             {/* Desktop drawer */}
             <Drawer
                 variant="permanent"
-                sx={{ display: { xs: 'none', md: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } }}
+                sx={{
+                    display: { xs: 'none', md: 'block' },
+                    '& .MuiDrawer-paper': {
+                        width: drawerWidth,
+                        boxSizing: 'border-box',
+                        borderRightColor: 'divider',
+                    },
+                }}
                 open
             >
                 <SideNav />
             </Drawer>
 
-            <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    width: { md: desktopContentWidth },
+                    minWidth: 0,
+                }}
+                className="w-full"
+            >
                 <Toolbar />
-                <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box>
-                        <Typography variant="h5">Dashboard</Typography>
-                        <Typography variant="body2" color="text.secondary">Overview and quick actions</Typography>
-                    </Box>
-                </Box>
 
-                <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2, boxShadow: 1 }}>
-                    <Outlet />
-                </Box>
+                <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+                    <div className="mx-auto w-full max-w-7xl text-gray-900">
+                        <Outlet />
+                    </div>
+                </div>
+
             </Box>
         </Box>
     )

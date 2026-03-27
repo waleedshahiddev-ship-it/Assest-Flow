@@ -143,3 +143,28 @@ export async function checkInviteTokenEmail(email, token) {
         throw error;
     }
 }
+
+
+// check the role of the user 
+
+export async function getUserRole(userId){
+    try {
+        const {data, error} = await supabase
+            .from("users")
+            .select("*")
+            .eq("id",userId)
+            .single()
+        
+        if(error) throw new Error("Failed to check the user role: " + error.message)
+
+        if(!data){
+            throw new Error("Invalid data while checking the user role")
+        }
+
+        return data.role
+
+    } catch (error) {
+        console.error("Error while checking the user role", error)
+        throw error
+    }
+}
