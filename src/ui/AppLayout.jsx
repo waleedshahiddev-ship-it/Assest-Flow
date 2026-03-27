@@ -10,38 +10,43 @@ const drawerWidth = 260
 
 export default function AppLayout() {
     const { open: mobileOpen, setOpen, toggle } = useSideBar()
-    const desktopContentWidth = `calc(100% - ${drawerWidth}px)`
 
     const handleNavigate = () => setOpen(false)
 
-
-
-
-
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+            {/* Navbar - Pass drawerWidth if it needs to shift its content */}
             <Navbar drawerWidth={drawerWidth} />
 
-            {/* Mobile drawer */}
+            {/* Mobile Drawer (Overlay) */}
             <Drawer
                 variant="temporary"
                 open={mobileOpen}
                 onClose={toggle}
-                ModalProps={{ keepMounted: true }}
-                sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth } }}
+                ModalProps={{ keepMounted: true }} // Better open performance on mobile.
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    '& .MuiDrawer-paper': { 
+                        width: drawerWidth,
+                        boxSizing: 'border-box' 
+                    },
+                }}
             >
                 <SideNav onNavigate={handleNavigate} />
             </Drawer>
 
-            {/* Desktop drawer */}
+            {/* Desktop Drawer (Persistent Space) */}
             <Drawer
                 variant="permanent"
                 sx={{
                     display: { xs: 'none', md: 'block' },
+                    width: drawerWidth, // This "reserves" the space so content doesn't hide behind it
+                    flexShrink: 0,      // Prevents the drawer from squishing
                     '& .MuiDrawer-paper': {
                         width: drawerWidth,
                         boxSizing: 'border-box',
-                        borderRightColor: 'divider',
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
                     },
                 }}
                 open
@@ -49,23 +54,28 @@ export default function AppLayout() {
                 <SideNav />
             </Drawer>
 
+            {/* Main Content Area */}
             <Box
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    width: { md: desktopContentWidth },
-                    minWidth: 0,
+                    minWidth: 0, // Prevents flex children from overflowing
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: 'background.default'
                 }}
-                className="w-full"
             >
+                {/* This Toolbar acts as a spacer so content doesn't go under the fixed Navbar */}
                 <Toolbar />
 
-                <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-                    <div className="mx-auto w-full max-w-7xl text-gray-900">
+                <div className="flex-1 overflow-auto bg-red-200">
+                    {/* Using max-w-7xl and mx-auto is the professional way to center content. 
+                        It stays readable on huge monitors and adapts to small ones.
+                    */}
+                    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <Outlet />
                     </div>
                 </div>
-
             </Box>
         </Box>
     )
