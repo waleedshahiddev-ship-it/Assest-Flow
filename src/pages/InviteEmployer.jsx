@@ -25,6 +25,9 @@ import { useEffect } from 'react'
 import { sendAdminInvite } from "../services/apiInvitations"
 import { useMutation } from '@tanstack/react-query'
 import { toast } from "sonner";
+import emailjs from '@emailjs/browser';
+
+
 
 const InviteEmployer = () => {
 
@@ -37,6 +40,7 @@ const InviteEmployer = () => {
 
 
     // query the supabase to get the company details 
+    const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ["Company Details of the User ID ", user?.id],
@@ -75,9 +79,40 @@ const InviteEmployer = () => {
 
     const mutation = useMutation({
         mutationFn: async (payload) => sendAdminInvite(payload),
-        onSuccess: () => {
-            toast.success("Admin Invite has been send successfully")
-            form.reset()
+        onSuccess: async (result) => {
+            try {
+                if (!EMAILJS_PUBLIC_KEY) {
+                    throw new Error("Missing VITE_EMAILJS_PUBLIC_KEY")
+                }
+
+                const inviteToken = result?.data?.token; // from your DB insert response
+                const inviteLink = `${import.meta.env.VITE_APP_URL}/invite/${inviteToken}`;
+
+                await emailjs.send(
+                    "service_bl4gzfr",
+                    "template_agmxdlx",
+                    {
+                        recipient_name: form.getValues("email")?.split("@")[0] || "User",
+                        sender_name: "Waleed",
+                        sender_role: "Employer",
+                        target_role: "IT Head",
+                        invite_message: "Hope you will enjoy the journey",
+                        company_name: data?.companyName || "Company",
+                        invite_link: inviteLink,
+                        support_email: `support@${(data?.companyName || "company").toLowerCase().replace(/\s+/g, "")}.com`,
+                        email: form.getValues("email")
+                    },
+                    {
+                        publicKey: EMAILJS_PUBLIC_KEY
+                    }
+                );
+
+                toast.success("Admin invite sent successfully");
+                form.reset();
+            } catch (e) {
+                console.error("EmailJS error:", e);
+                toast.error("Invite created, but email sending failed");
+            }
         },
         onError: (err) => {
             toast.error("Admin Invite not send")
