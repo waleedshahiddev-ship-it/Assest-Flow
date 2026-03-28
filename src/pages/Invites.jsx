@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { getUserRole } from "../services/apiOnboarding"
+import { getUserRole } from "../services/apiInvitations"
 import { useQuery } from "@tanstack/react-query"
 import { useUser } from '@clerk/react'
 import { useNavigate } from 'react-router-dom'

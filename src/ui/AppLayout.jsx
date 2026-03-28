@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import Toolbar from '@mui/material/Toolbar'
 import Drawer from '@mui/material/Drawer'
 import Box from '@mui/material/Box'
@@ -68,12 +69,13 @@ export default function AppLayout() {
                 {/* This Toolbar acts as a spacer so content doesn't go under the fixed Navbar */}
                 <Toolbar />
 
-                <div className="flex-1 overflow-auto bg-red-200">
+                <div className="flex-1 overflow-auto">
                     {/* Using max-w-7xl and mx-auto is the professional way to center content. 
                         It stays readable on huge monitors and adapts to small ones.
                     */}
                     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <Outlet />
+                        <Toaster richColors position="top-right" />
                     </div>
                 </div>
             </Box>

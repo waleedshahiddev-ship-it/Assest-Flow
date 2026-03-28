@@ -1,7 +1,6 @@
 import React from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,136 +13,243 @@ import {
 } from "@/components/ui/card"
 import {
     Field,
-    FieldDescription,
     FieldError,
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupText,
-    InputGroupTextarea,
-} from "@/components/ui/input-group"
-
-
-
+import { getCompanyDetails } from "../services/apiInvitations"
+import { useQuery } from '@tanstack/react-query'
+import { useUser } from '@clerk/react'
+import { useEffect } from 'react'
+import { sendAdminInvite } from "../services/apiInvitations"
+import { useMutation } from '@tanstack/react-query'
+import { toast } from "sonner";
 
 const InviteEmployer = () => {
 
+
+
+    // get the id of the current clerk user 
+
+    const { user, isLoaded } = useUser()
+
+
+
+    // query the supabase to get the company details 
+
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["Company Details of the User ID ", user?.id],
+        queryFn: () => getCompanyDetails(user?.id),
+        enabled: isLoaded && !!user?.id
+    })
+
+    if (isError) {
+        throw new Error("Failed to fetch the company details of the current user")
+    }
+
+
+
+
+
+    const defaultValues = {
+        email: "",
+        role: "admin",
+        companyName: "",
+        companyLocation: ""
+    }
+
     const formSchema = z.object({
-        title: z
-            .string()
-            .min(5, "Bug title must be at least 5 characters.")
-            .max(32, "Bug title must be at most 32 characters."),
-        description: z
-            .string()
-            .min(20, "Description must be at least 20 characters.")
-            .max(100, "Description must be at most 100 characters."),
+        email: z.string().email(),
+        role: z.string(),
+        companyName: z.string(),
+        companyLocation: z.string()
     })
 
 
     const form = useForm({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-        },
+        defaultValues
     })
 
-    function onSubmit() {
 
+    const mutation = useMutation({
+        mutationFn: async (payload) => sendAdminInvite(payload),
+        onSuccess: () => {
+            toast.success("Admin Invite has been send successfully")
+            form.reset()
+        },
+        onError: (err) => {
+            toast.error("Admin Invite not send")
+            form.reset()
+        },
+    });
+
+    useEffect(() => {
+        if (!isLoading && data) {
+            form.reset({
+                email: form.getValues("email") || "",
+                role: form.getValues("role") || "admin",
+                companyName: data.companyName ?? "",
+                companyLocation: data.companyLocation ?? ""
+            })
+        }
+    }, [isLoading, data, form])
+
+    function onSubmit(values) {
+
+        // extract the values 
+
+        const { email } = values
+        const payload = {
+            clerkId: user.id,
+            receipientEmail: email,
+            companyId: data.companyId
+        }
+        mutation.mutate(payload)
     }
 
-    return (
-        <div className='h-[900px] w-[1200px] bg-green-500 mx-auto'>
-            <h1 className='text-[25px] font-bold '>
-                Invite an IT Manager To Your Company
-            </h1>
 
-            <div className='h-[700px] w-[900px] bg-yellow-200 mx-auto mt-[5%]
-flex flex-col items-center
-'>
-                <Card className="w-full sm:max-w-md">
-                    <CardHeader>
-                        <CardTitle>Bug Report</CardTitle>
-                        <CardDescription>
-                            Help us improve by reporting bugs you encounter.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
-                            <FieldGroup>
+
+    return (
+        <div className="mx-auto max-w-2xl py-8">
+            <div className="mb-8 space-y-2 text-center">
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                    Expand Your Team
+                </h1>
+                <p className="text-lg text-slate-600">
+                    Invite an <span className="font-semibold text-emerald-600">IT Manager</span> to streamline your company's asset operations.
+                </p>
+            </div>
+
+            <Card className="border-none bg-white shadow-xl ring-1 ring-slate-200">
+                <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800">Invitation Details</CardTitle>
+                    <CardDescription className="text-slate-500">
+                        Enter the colleague's email address below safely.
+                    </CardDescription>
+                </CardHeader>
+
+                <CardContent className="pt-8">
+                    <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FieldGroup className="space-y-6">
+                            <Controller
+                                name="email"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel className="text-slate-700 font-medium" htmlFor="invite-form-email">
+                                            Recipient Email
+                                        </FieldLabel>
+                                        <Input
+                                            {...field}
+                                            id="invite-form-email"
+                                            aria-invalid={fieldState.invalid}
+                                            placeholder="e.g. ithead@yourcompany.com"
+                                            autoComplete="off"
+                                            className="h-11 transition-all focus:ring-2 focus:ring-emerald-500"
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError errors={[fieldState.error]} />
+                                        )}
+                                    </Field>
+                                )}
+                            />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                                 <Controller
-                                    name="title"
+                                    name="role"
                                     control={form.control}
                                     render={({ field, fieldState }) => (
                                         <Field data-invalid={fieldState.invalid}>
-                                            <FieldLabel htmlFor="form-rhf-demo-title">
-                                                Bug Title
+                                            <FieldLabel className="text-slate-600 text-xs uppercase tracking-wider" htmlFor="invite-form-role">
+                                                Assigning Role
                                             </FieldLabel>
                                             <Input
                                                 {...field}
-                                                id="form-rhf-demo-title"
+                                                id="invite-form-role"
                                                 aria-invalid={fieldState.invalid}
-                                                placeholder="Login button not working on mobile"
-                                                autoComplete="off"
+                                                disabled
+                                                className="bg-slate-50 font-medium text-slate-500 border-dashed cursor-not-allowed"
                                             />
-                                            {fieldState.invalid && (
-                                                <FieldError errors={[fieldState.error]} />
-                                            )}
                                         </Field>
                                     )}
                                 />
+
                                 <Controller
-                                    name="description"
+                                    name="companyName"
                                     control={form.control}
                                     render={({ field, fieldState }) => (
                                         <Field data-invalid={fieldState.invalid}>
-                                            <FieldLabel htmlFor="form-rhf-demo-description">
-                                                Description
+                                            <FieldLabel className="text-slate-600 text-xs uppercase tracking-wider" htmlFor="invite-form-company-name">
+                                                Company
                                             </FieldLabel>
-                                            <InputGroup>
-                                                <InputGroupTextarea
-                                                    {...field}
-                                                    id="form-rhf-demo-description"
-                                                    placeholder="I'm having an issue with the login button on mobile."
-                                                    rows={6}
-                                                    className="min-h-24 resize-none"
-                                                    aria-invalid={fieldState.invalid}
-                                                />
-                                                <InputGroupAddon align="block-end">
-                                                    <InputGroupText className="tabular-nums">
-                                                        {field.value.length}/100 characters
-                                                    </InputGroupText>
-                                                </InputGroupAddon>
-                                            </InputGroup>
-                                            <FieldDescription>
-                                                Include steps to reproduce, expected behavior, and what
-                                                actually happened.
-                                            </FieldDescription>
-                                            {fieldState.invalid && (
-                                                <FieldError errors={[fieldState.error]} />
-                                            )}
+                                            <Input
+                                                {...field}
+                                                id="invite-form-company-name"
+                                                aria-invalid={fieldState.invalid}
+                                                disabled
+                                                className="bg-slate-50 font-medium text-slate-500 border-dashed cursor-not-allowed"
+                                            />
                                         </Field>
                                     )}
                                 />
-                            </FieldGroup>
-                        </form>
-                    </CardContent>
-                    <CardFooter>
-                        <Field orientation="horizontal">
-                            <Button type="button" variant="outline" onClick={() => form.reset()}>
-                                Reset
+                            </div>
+
+                            <Controller
+                                name="companyLocation"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel className="text-slate-600 text-xs uppercase tracking-wider" htmlFor="invite-form-company-location">
+                                            Organization Location
+                                        </FieldLabel>
+                                        <Input
+                                            {...field}
+                                            id="invite-form-company-location"
+                                            aria-invalid={fieldState.invalid}
+                                            disabled
+                                            className="bg-slate-50 font-medium text-slate-500 border-dashed cursor-not-allowed"
+                                        />
+                                    </Field>
+                                )}
+                            />
+                        </FieldGroup>
+                    </form>
+                </CardContent>
+
+                <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 bg-slate-50/50 border-t border-slate-100 p-6">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => form.reset()}
+                        disabled={mutation.isPending}
+                        className={`w-full sm:w-auto text-slate-500 hover:text-slate-700 ${mutation.isPending ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                        Clear Form
+                    </Button>
+                    {
+                        mutation.isPending ? (
+                            <span className="flex items-center gap-2 text-slate-900">
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden>
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                </svg>
+                                Sending...
+                            </span>
+                        ) : (
+                            <Button
+                                type="submit"
+                                form="invite-form"
+                                className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8 h-11 shadow-sm transition-all active:scale-[0.98]"
+                            >
+                                Send Invitation
                             </Button>
-                            <Button type="submit" form="form-rhf-demo">
-                                Submit
-                            </Button>
-                        </Field>
-                    </CardFooter>
-                </Card>
-            </div>
+                        )
+                    }
+                </CardFooter>
+            </Card>
+
         </div>
     )
 }
