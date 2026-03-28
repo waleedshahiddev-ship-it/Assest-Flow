@@ -26,8 +26,8 @@ import { sendAdminInvite } from "../services/apiInvitations"
 import { useMutation } from '@tanstack/react-query'
 import { toast } from "sonner";
 import emailjs from '@emailjs/browser';
-
-
+import { useState } from 'react'
+import { getUserDetails } from "../services/apiInvitations"
 
 const InviteEmployer = () => {
 
@@ -37,12 +37,13 @@ const InviteEmployer = () => {
 
     const { user, isLoaded } = useUser()
 
+    const [userName, setUserName] = useState("")
 
 
     // query the supabase to get the company details 
     const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading: companyLoading, isError } = useQuery({
         queryKey: ["Company Details of the User ID ", user?.id],
         queryFn: () => getCompanyDetails(user?.id),
         enabled: isLoaded && !!user?.id
@@ -52,9 +53,26 @@ const InviteEmployer = () => {
         throw new Error("Failed to fetch the company details of the current user")
     }
 
+    // query to find the user details like user name to be used in the invitation email 
+
+    const { data: userProfile, isLoading, isError: userProfileError } = useQuery({
+        queryKey: ["User Profile details", user?.id],
+        queryFn: () => getUserDetails(user?.id),
+        enabled: isLoaded && !!user?.id
+    })
+
+    if (userProfileError) {
+        throw new Error("Failed to fetch the company details of the current user")
+    }
 
 
 
+
+    useEffect(() => {
+        if (!isLoading && userProfile) {
+            setUserName(data.full_name)
+        }
+    }, [isLoading, userProfile])
 
     const defaultValues = {
         email: "",
@@ -93,8 +111,8 @@ const InviteEmployer = () => {
                     "template_agmxdlx",
                     {
                         recipient_name: form.getValues("email")?.split("@")[0] || "User",
-                        sender_name: "Waleed",
-                        sender_role: "Employer",
+                        sender_name: `${userName}`,
+                        sender_role: "Company Head",
                         target_role: "IT Head",
                         invite_message: "Hope you will enjoy the journey",
                         company_name: data?.companyName || "Company",
@@ -121,7 +139,7 @@ const InviteEmployer = () => {
     });
 
     useEffect(() => {
-        if (!isLoading && data) {
+        if (!companyLoading && data) {
             form.reset({
                 email: form.getValues("email") || "",
                 role: form.getValues("role") || "admin",
@@ -129,7 +147,7 @@ const InviteEmployer = () => {
                 companyLocation: data.companyLocation ?? ""
             })
         }
-    }, [isLoading, data, form])
+    }, [companyLoading, data, form])
 
     function onSubmit(values) {
 
