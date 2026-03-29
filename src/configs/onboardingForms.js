@@ -1,5 +1,3 @@
-import { HideImageRounded } from "@mui/icons-material"
-
 
 export const employerOnboardingForm = {
     title: "Employer Onboarding",
@@ -25,6 +23,7 @@ export const adminOnboardingForm = {
     submitLabel: "Continue",
     fields: [
         { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true, hidden: true },
+        { name: "companyId", label: "Company ID ", type: "text", readOnly: true, hidden: true},
         { name: "email", label: "Email", type: "email", readOnly: true },
         { name: "fullName", label: "Full Name", type: "text" },
         { name: "role", label: "Role", type: "text", readOnly: true },

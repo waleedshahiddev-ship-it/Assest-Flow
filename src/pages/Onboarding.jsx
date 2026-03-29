@@ -10,7 +10,8 @@ import { OnboardingForm } from '../ui/OnboardingForm'
 import { checkOnboardingStatus } from "../services/apiOnboarding";
 import { useQuery } from "@tanstack/react-query"
 import { Typography } from "@mui/material";
-
+import { getCompanyDetailsBasedOnToken } from "../services/apiOnboarding"
+import { useOnboarding } from "@/context/OnboardingContext";
 
 
 const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
@@ -21,10 +22,13 @@ const Onboarding = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const userId = user?.id;
+    const { token } = useOnboarding()
 
     const normalizedRole = (role || "").toLowerCase();
     const roleSchema = schemas[normalizedRole];
     const uiConfig = formConfigs[normalizedRole];
+    const isEmployer = normalizedRole === "employer";
+    const shouldFetchCompanyDetails = ["admin", "manager", "employee"].includes(normalizedRole) && !!token;
 
     const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } = useQuery({
         queryKey: ["onboardingStatus", userId],
@@ -44,10 +48,19 @@ const Onboarding = () => {
         },
     });
 
-    let defaultValues;
+    
+    const {
+        data: companyData,
+        isLoading: companyLoading,
+        isError: companyError,
+    } = useQuery({
+        queryKey: ["Company Details Based on the token", token],
+        queryFn: () => getCompanyDetailsBasedOnToken(token),
+        enabled: shouldFetchCompanyDetails,
+    })
 
-    if (role === "employer") {
-        defaultValues = {
+    const defaultValues = isEmployer
+        ? {
             clerkId: user?.id || "",
             email: user?.emailAddresses?.[0]?.emailAddress || "",
             fullName: user?.fullName || "",
@@ -58,21 +71,18 @@ const Onboarding = () => {
             website: "",
             location: "",
             phone: "",
-        };
-    }
-
-    if (role === "admin") {
-        defaultValues = {
+        }
+        : {
             clerkId: user?.id || "",
+            companyId: companyData?.id || "", 
             email: user?.emailAddresses?.[0]?.emailAddress || "",
             fullName: user?.fullName || "",
             role: normalizedRole,
             phone: "",
             title: "",
-            companyName: "TechNova",
-            companyLocation: "Lahore, Pakistan"
+            companyName: companyData?.name || "",
+            companyLocation: companyData?.location || "",
         }
-    }
 
 
 
@@ -119,6 +129,24 @@ const Onboarding = () => {
                 Checking onboarding status...
             </div>
         );
+    }
+
+    if (!isEmployer && companyLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                Loading company details...
+            </div>
+        )
+    }
+
+    if (!isEmployer && companyError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                <Typography variant="h6" color="error">
+                    Error occurred while checking company details.
+                </Typography>
+            </div>
+        )
     }
 
     // If onboarding is already completed, block direct access to onboarding routes.

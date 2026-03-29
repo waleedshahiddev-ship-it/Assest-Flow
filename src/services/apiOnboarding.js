@@ -76,6 +76,47 @@ export async function createUserAndCompany(payload) {
             return { user, company: { ...company, owner_id: user.id } };
         }
 
+        if (role == "admin") {
+            const { clerkId, companyId, email, fullName, phone, role, title } = payload
+
+            if (!clerkId || !email || !fullName) {
+                throw new Error("Missing required fields for admin onboarding");
+            }
+
+
+            // create the user record 
+            const { data: user, error: userError } = await supabase
+                .from("users")
+                .insert({
+                    clerk_id: clerkId,
+                    email,
+                    full_name: fullName,
+                    role: role,
+                    company_id: companyId,
+                    onboarding_completed: true,
+                })
+                .select()
+                .single();
+
+            if (userError || !user) {
+                throw new Error("Failed to create user: " + (userError?.message || "unknown"));
+            };
+
+            // create the admin record and link it with the user account created 
+            const { data: admin, error: adminError } = await supabase.from("admin_profiles")
+                .insert({
+                    user_id: user.id,
+                    company_id: companyId,
+                    phone: phone || "",
+                    title: title || "",
+                });
+
+            if (adminError) throw new Error("Failed to create admin record: " + employerError.message);
+
+            return { ...user, ...admin }
+
+        }
+
     } catch (error) {
         console.error("Onboarding error:", error);
         throw error;
@@ -145,5 +186,54 @@ export async function checkInviteTokenEmail(email, token) {
 }
 
 
+// get compnay details from the token 
 
+export async function getCompanyDetailsBasedOnToken(token) {
+    try {
+        // get the sender id based on token from the invitations 
+
+        const { data: sender, isError: senderError } = await supabase
+            .from("invitations")
+            .select("*")
+            .eq("token", token)
+            .single()
+
+        if (senderError) {
+            throw new Error("Error while getting the company details based on the token")
+        }
+
+        const senderId = sender.sender_id
+
+        // get the company id based on the sender id 
+
+        const { data: companyIdData, isError: companyIdDataError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", senderId)
+            .single()
+
+        if (companyIdDataError) {
+            throw new Error("Error while getting the company details based on the token")
+        }
+
+        const companyId = companyIdData.company_id
+
+        // get the company details based on the compnay id 
+
+        const { data: companyData, isError: companyDataError } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("id", companyId)
+            .single()
+
+        if (companyDataError) {
+            throw new Error("Error while getting the company details based on the token")
+        }
+
+        return companyData
+
+    } catch (error) {
+        throw new Error("Error while getting the company details based on the token")
+    }
+}
 
