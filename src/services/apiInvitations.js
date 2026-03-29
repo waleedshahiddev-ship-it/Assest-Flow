@@ -146,7 +146,7 @@ export async function getUserDetails(clerkId) {
             .select("*")
             .eq("clerk_id", clerkId)
             .single()
-        
+
 
         if (userError) {
             throw new Error("Error while checking the user details", userError.message)
@@ -155,5 +155,39 @@ export async function getUserDetails(clerkId) {
         return user
     } catch (error) {
         throw new Error("Error while checking the user details", error)
+    }
+}
+
+
+// query the invitations table and validate the token status 
+
+export async function validateTokenStatus(token) {
+    try {
+
+        // query the supabase to validate the token 
+
+        const { data: tokenData, error: tokenError } = await supabase
+            .from("invitations")
+            .select("*")
+            .eq("token", token)
+            .single()
+
+
+        if (tokenError) {
+            throw new Error("Error ", tokenError)
+        }
+
+        if (!tokenData) {
+            return { validate: false, message: "Invalid token" }
+        }
+
+        if (tokenData.status === "used") {
+            return { validate: false, message: "Token is used already" }
+        }
+
+        return { validate: true, message: "Token is valid" }
+
+    } catch (error) {
+        throw new Error("Error while checking the token status", error)
     }
 }

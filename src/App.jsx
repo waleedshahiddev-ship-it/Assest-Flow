@@ -20,6 +20,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { OnboardingProvider } from './context/OnboardingContext'
 import Invites from './pages/Invites'
 import InviteEmployer from './pages/InviteEmployer'
+import AdminAcceptInvitation from './pages/AdminAcceptInvitation'
 
 const theme = createTheme()
 const queryClient = new QueryClient()
@@ -60,6 +61,11 @@ const App = () => {
                     }
                   />
 
+
+                  {/* Accept Inviations Routes - PUBLIC , not inside AppLayout} */}
+
+                  < Route path='/:role/invite/:token' element={<AdminAcceptInvitation />} />
+
                   {/* Public auth routes */}
                   <Route
                     path="/login/*"
@@ -91,6 +97,7 @@ const App = () => {
                     <Route path="home" element={<Home />} />
                     <Route path="invites" element={<Invites />} />
                     <Route path="invites/employer" element={<InviteEmployer />} />
+
                   </Route>
                 </Routes>
               </BrowserRouter>

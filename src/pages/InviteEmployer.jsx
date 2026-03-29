@@ -106,7 +106,7 @@ const InviteEmployer = () => {
                 }
 
                 const inviteToken = result?.data?.token; // from your DB insert response
-                const inviteLink = `${import.meta.env.VITE_APP_URL}/invite/${inviteToken}`;
+                const inviteLink = `${import.meta.env.VITE_APP_URL}/admin/invite/${inviteToken}`;
 
 
                 await emailjs.send(
