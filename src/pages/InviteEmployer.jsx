@@ -43,14 +43,15 @@ const InviteEmployer = () => {
     // query the supabase to get the company details 
     const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
-    const { data, isLoading: companyLoading, isError } = useQuery({
+    const { data, isLoading: companyLoading, isError: companyError } = useQuery({
         queryKey: ["Company Details of the User ID ", user?.id],
         queryFn: () => getCompanyDetails(user?.id),
         enabled: isLoaded && !!user?.id
     })
 
-    if (isError) {
-        throw new Error("Failed to fetch the company details of the current user")
+    if (companyError) {
+        throw new Error("Failed to fetch the company details of the current user", companyError)
+
     }
 
     // query to find the user details like user name to be used in the invitation email 
@@ -62,7 +63,7 @@ const InviteEmployer = () => {
     })
 
     if (userProfileError) {
-        throw new Error("Failed to fetch the company details of the current user")
+        throw new Error("Failed to fetch the user profile details", userProfileError)
     }
 
 
@@ -70,7 +71,8 @@ const InviteEmployer = () => {
 
     useEffect(() => {
         if (!isLoading && userProfile) {
-            setUserName(data.full_name)
+            console.log(userProfile.full_name)
+            setUserName(userProfile.full_name)
         }
     }, [isLoading, userProfile])
 
@@ -106,6 +108,7 @@ const InviteEmployer = () => {
                 const inviteToken = result?.data?.token; // from your DB insert response
                 const inviteLink = `${import.meta.env.VITE_APP_URL}/invite/${inviteToken}`;
 
+
                 await emailjs.send(
                     "service_bl4gzfr",
                     "template_agmxdlx",
@@ -124,6 +127,7 @@ const InviteEmployer = () => {
                         publicKey: EMAILJS_PUBLIC_KEY
                     }
                 );
+
 
                 toast.success("Admin invite sent successfully");
                 form.reset();

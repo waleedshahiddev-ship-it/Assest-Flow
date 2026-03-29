@@ -1,3 +1,4 @@
+import { data } from "react-router-dom"
 import { supabase } from "./supabase"
 
 
@@ -138,16 +139,17 @@ export async function sendAdminInvite(payload) {
 
 // get the user details 
 
-export async function getUserDetails(clerkId){
+export async function getUserDetails(clerkId) {
     try {
-        const {data:user, error: userError} = await supabase
-        .from("users")
-        .select("*")
-        .eq("clerk_id", clerkId)
-        .single()
+        const { data: user, error: userError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("clerk_id", clerkId)
+            .single()
+        
 
-        if(error){
-            throw new Error("Error while checking the user details", error)
+        if (userError) {
+            throw new Error("Error while checking the user details", userError.message)
         }
 
         return user
