@@ -159,23 +159,35 @@ export async function checkOnboardingStatus(clerkId) {
 
 export async function checkInviteTokenEmail(email, token) {
     try {
+        if (!email || !token) {
+            return { valid: false, message: "Missing email or invite token" };
+        }
+
         const { data: invite, error } = await supabase
             .from("invitations")
             .select("*")
             .eq("token", token)
-            .eq("email", email)
-            .eq("status", "pending")
-            .gt("expire_at", new Date().toISOString())
-            .single();
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
         if (error) throw new Error("Failed to check invite token: " + error.message);
 
         if (!invite) {
-            return { valid: false, message: "Invalid, expired, or already-used invite token" };
+            return { valid: false, message: "Invalid invite token" };
         }
 
-        if (invite.email !== email) {
+        if ((invite.email || "").trim().toLowerCase() !== (email || "").trim().toLowerCase()) {
             return { valid: false, message: "Invite token does not match the logged in user's email" };
+        }
+
+        if (invite.status !== "pending") {
+            return { valid: false, message: "Invite token is already used or no longer pending" };
+        }
+
+        const expiresAt = invite.expire_at ? new Date(invite.expire_at) : null;
+        if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+            return { valid: false, message: "Invite token has expired" };
         }
 
         return { valid: true, message: "Valid invite token" };

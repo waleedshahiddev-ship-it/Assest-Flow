@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useUser } from "@clerk/react"
 import { useOnboarding } from "../context/OnboardingContext"
 import { checkOnboardingStatus } from "../services/apiOnboarding"
@@ -77,7 +77,6 @@ const OnboardingCheck = () => {
                 }
 
                 console.error(inviteQuery.data?.message || "Invalid invite token")
-                console.error("Invalid role in onboarding context:", role)
                 return
             }
 
