@@ -94,12 +94,21 @@ const Onboarding = () => {
         );
     }
 
-    if (onboardingLoading && onboarding?.onboarding) {
+    if (onboardingLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+                Checking onboarding status...
+            </div>
+        );
+    }
+
+    // If onboarding is already completed, block direct access to onboarding routes.
+    if (onboarding?.onboarding) {
         return <Navigate to="/" replace />;
     }
 
 
-    if (!ALLOWED_ROLES.includes(role)) {
+    if (!ALLOWED_ROLES.includes(normalizedRole)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
                 Unsupported onboarding role. Please use a valid role URL.

@@ -1,9 +1,11 @@
-import { useParams } from "react-router-dom"
+import { Navigate, useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { validateTokenStatus } from "../services/apiInvitations"
 import { toast } from "sonner"
 import { useUser } from "@clerk/react"
+import { useOnboarding } from "../context/OnboardingContext"
+import { useNavigate } from "react-router-dom"
 const AdminAcceptInvitation = () => {
 
     const params = useParams()
@@ -14,8 +16,11 @@ const AdminAcceptInvitation = () => {
 
     const [currentRoleIsValid, setCurrentRoleIsValid] = useState(false)
 
-    const { user, isLoaded, isSignedIn } = useUser()
+    const { isLoaded, isSignedIn } = useUser()
+    
+    const {setOnboardingData, clearOnboardingData} = useOnboarding()
 
+    
 
 
     useEffect(() => {
@@ -66,13 +71,17 @@ const AdminAcceptInvitation = () => {
 
 
     if (isSignedIn) {
-        return <div>Need to sign out first — signed in as {displayName}</div>
+        return <div>Need to sign out first </div>
     }
 
 
-    // add the role 
+    // add the role and the token in the react context 
+
+    setOnboardingData(role, token)
+
+
     return tokenStatus.validate ? (
-        <div>Configurations {token} || {role}</div>
+        <Navigate to={`/register`} replace/>
     ) : (
         <div>{tokenStatus.message}</div>
     )
