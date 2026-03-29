@@ -58,6 +58,7 @@ const OnboardingCheck = () => {
             return
         }
 
+        console.log(role, token)
         // check any onbaording data exits in the onboarding react context or not 
 
         if (role && token) {

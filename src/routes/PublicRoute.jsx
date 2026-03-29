@@ -10,7 +10,8 @@ const PublicRoute = ({ children }) => {
     }
 
     if (isSignedIn) {
-        return <Navigate to="/" />
+        // Let onboarding check decide final destination based on onboarding status.
+        return <Navigate to="/onboarding/check" replace />
     }
 
     return children

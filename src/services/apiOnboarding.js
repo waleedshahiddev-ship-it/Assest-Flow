@@ -124,7 +124,7 @@ export async function checkInviteTokenEmail(email, token) {
             .eq("token", token)
             .eq("email", email)
             .eq("status", "pending")
-            .gt("expires_at", new Date().toISOString())
+            .gt("expire_at", new Date().toISOString())
             .single();
 
         if (error) throw new Error("Failed to check invite token: " + error.message);

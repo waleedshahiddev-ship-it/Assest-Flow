@@ -1,10 +1,13 @@
+import { HideImageRounded } from "@mui/icons-material"
+
+
 export const employerOnboardingForm = {
     title: "Employer Onboarding",
     description: "Please fill out the form below to create your account and company profile.",
     submitLabel: "Create Account and Company",
     fields: [
         { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true, hidden: true },
-        { name: "email", label: "Email", type: "email", readOnly: true},
+        { name: "email", label: "Email", type: "email", readOnly: true },
         { name: "fullName", label: "Full Name", type: "text" },
         { name: "role", label: "Role", type: "text", readOnly: true },
         { name: "companyName", label: "Company Name", type: "text" },
@@ -21,11 +24,15 @@ export const adminOnboardingForm = {
     description: "Confirm your profile details to continue.",
     submitLabel: "Continue",
     fields: [
-        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true },
-        { name: "email", label: "Email", type: "email" },
+        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true, hidden: true },
+        { name: "email", label: "Email", type: "email", readOnly: true },
         { name: "fullName", label: "Full Name", type: "text" },
         { name: "role", label: "Role", type: "text", readOnly: true },
-        { name: "token", label: "Invite Token", type: "text", readOnly: true },
+        { name: "companyName", label: "Company Name", type: "text", readOnly: true },
+        { name: "companyLocation", label: "Company Location", type: "text", readOnly: true },
+        { name: "phone", label: "Phone", type: "text" },
+        { name: "title", label: "Title", type: "text" },
+        { name: "token", label: "Invite Token", type: "text", readOnly: true, hidden: true },
     ],
 }
 

@@ -1,11 +1,11 @@
-import { Navigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { validateTokenStatus } from "../services/apiInvitations"
 import { toast } from "sonner"
 import { useUser } from "@clerk/react"
 import { useOnboarding } from "../context/OnboardingContext"
-import { useNavigate } from "react-router-dom"
+
 const AdminAcceptInvitation = () => {
 
     const params = useParams()
@@ -17,10 +17,11 @@ const AdminAcceptInvitation = () => {
     const [currentRoleIsValid, setCurrentRoleIsValid] = useState(false)
 
     const { isLoaded, isSignedIn } = useUser()
-    
-    const {setOnboardingData, clearOnboardingData} = useOnboarding()
 
-    
+    const { setOnboardingData } = useOnboarding()
+    const navigate = useNavigate()
+
+
 
 
     useEffect(() => {
@@ -40,15 +41,20 @@ const AdminAcceptInvitation = () => {
         enabled: !!token
     })
 
-    if (tokenStatusError) {
-        toast.error("Error while checking the invitation")
-    }
+    useEffect(() => {
+        if (tokenStatusError) {
+            toast.error("Error while checking the invitation")
+        }
+    }, [tokenStatusError])
 
+    // Persist invite role/token in onboarding context only after validations pass.
+    useEffect(() => {
+        if (!tokenLoading && tokenStatus?.validate && !isSignedIn && role && token) {
+            setOnboardingData(role, token)
+            navigate('/register', { replace: true })
+        }
+    }, [tokenLoading, tokenStatus, isSignedIn, role, token, setOnboardingData, navigate])
 
-    if (!tokenLoading && tokenStatus) {
-        console.log(tokenStatus)
-        console.log(tokenStatus.validate)
-    }
 
     if (!currentRoleIsValid) {
         return <div>Not a valid role</div>
@@ -74,17 +80,11 @@ const AdminAcceptInvitation = () => {
         return <div>Need to sign out first </div>
     }
 
+    if (tokenStatus.validate) {
+        return <div>Redirecting to sign up…</div>
+    }
 
-    // add the role and the token in the react context 
-
-    setOnboardingData(role, token)
-
-
-    return tokenStatus.validate ? (
-        <Navigate to={`/register`} replace/>
-    ) : (
-        <div>{tokenStatus.message}</div>
-    )
+    return <div>{tokenStatus.message}</div>
 }
 
 

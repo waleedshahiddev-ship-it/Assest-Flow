@@ -44,18 +44,37 @@ const Onboarding = () => {
         },
     });
 
-    const defaultValues = {
-        clerkId: user?.id || "",
-        email: user?.emailAddresses?.[0]?.emailAddress || "",
-        fullName: user?.fullName || "",
-        role: normalizedRole,
-        companyName: "",
-        industry: "",
-        companySize: "",
-        website: "",
-        location: "",
-        phone: "",
-    };
+    let defaultValues;
+
+    if (role === "employer") {
+        defaultValues = {
+            clerkId: user?.id || "",
+            email: user?.emailAddresses?.[0]?.emailAddress || "",
+            fullName: user?.fullName || "",
+            role: normalizedRole,
+            companyName: "",
+            industry: "",
+            companySize: "",
+            website: "",
+            location: "",
+            phone: "",
+        };
+    }
+
+    if (role === "admin") {
+        defaultValues = {
+            clerkId: user?.id || "",
+            email: user?.emailAddresses?.[0]?.emailAddress || "",
+            fullName: user?.fullName || "",
+            role: normalizedRole,
+            phone: "",
+            title: "",
+            companyName: "TechNova",
+            companyLocation: "Lahore, Pakistan"
+        }
+    }
+
+
 
     const handleSubmit = async (values) => {
         if (!isLoaded || !user) {
