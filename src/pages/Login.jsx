@@ -1,49 +1,64 @@
 import { SignIn } from "@clerk/react"
-
+import { Card } from "../components/ui/card"
 
 const Login = () => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4">
-            <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                <div className="hidden md:flex flex-col justify-center pl-6">
-                    <div className="mb-6">
-                        <h1 className="text-4xl font-extrabold text-indigo-700">Asset Flow</h1>
-                        <p className="mt-3 text-lg text-gray-700">Secure sign in for role-based asset operations and onboarding.</p>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+            <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="hidden md:flex flex-col justify-center space-y-8 pr-12">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold border border-indigo-100">
+                            Enterprise Solution
+                        </div>
+                        <h1 className="text-6xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                            Asset Flow
+                        </h1>
+                        <p className="text-xl text-slate-600 leading-relaxed max-w-md">
+                            The enterprise-grade solution for streamlined asset management and role-based operations.
+                        </p>
                     </div>
-                    <div className="mt-6 text-sm text-gray-500 space-y-3">
-                        <p className="flex items-start"><span className="mr-2 text-indigo-500">•</span>Centralized asset management</p>
-                        <p className="flex items-start"><span className="mr-2 text-indigo-500">•</span>Role-based access control</p>
-                        <p className="flex items-start"><span className="mr-2 text-indigo-500">•</span>Secure, audited operations</p>
+                    
+                    <div className="space-y-5">
+                        {[
+                            { title: "Asset Lifecycle", desc: "Track every asset from acquisition to disposal." },
+                            { title: "Role-Based Access", desc: "Granular permissions for every team member." },
+                            { title: "Audit Ready", desc: "Real-time logs for complete transparency." },
+                            { title: "Cloud Scale", desc: "Built to grow with your infrastructure." }
+                        ].map((feature, i) => (
+                            <div key={i} className="flex items-start space-x-4">
+                                <div className="mt-1.5 h-2 w-2 rounded-full bg-indigo-600 flex-shrink-0" />
+                                <div>
+                                    <h4 className="text-lg font-bold text-slate-900">{feature.title}</h4>
+                                    <p className="text-slate-500">{feature.desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="flex items-center justify-center">
-                    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-                        <div className="mb-6 text-center">
-                            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
-                                </svg>
-                            </div>
-                            <h2 className="text-2xl font-semibold text-gray-800">Welcome back</h2>
-                            <p className="text-sm text-gray-500 mt-2">Sign in to continue to your workspace.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <SignIn appearance={{
-                                variables: { colorPrimary: '#4F46E5' },
-                                elements: { card: 'shadow-none' }
+                <div className="flex justify-center md:justify-end">
+                    <Card className="w-full max-w-[440px] border-none shadow-2xl bg-white overflow-hidden rounded-2xl">
+                        <SignIn 
+                            appearance={{
+                                elements: {
+                                    rootBox: "w-full",
+                                    card: "shadow-none border-none p-4 sm:p-8",
+                                    headerTitle: "text-2xl font-bold text-slate-900",
+                                    headerSubtitle: "text-slate-500",
+                                    formButtonPrimary: "bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold transition-all shadow-sm normal-case h-11",
+                                    footerActionLink: "text-indigo-600 hover:text-indigo-700 font-semibold",
+                                    formFieldInput: "h-11 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg",
+                                    dividerLine: "bg-slate-100",
+                                    dividerText: "text-slate-400 text-xs uppercase tracking-wider",
+                                    identityPreviewText: "text-slate-600",
+                                    identityPreviewEditButton: "text-indigo-600 font-semibold"
+                                }
                             }}
-                                path="/login"
-                                routing="path"
-                                signUpUrl="/register"
-                                 />
-                        </div>
-
-                        <div className="mt-6 text-xs text-center text-gray-400">
-                            By continuing you agree to our <a className="text-indigo-600 underline" href="#">terms</a> and <a className="text-indigo-600 underline" href="#">privacy policy</a>.
-                        </div>
-                    </div>
+                            path="/login"
+                            routing="path"
+                            signUpUrl="/register"
+                        />
+                    </Card>
                 </div>
             </div>
         </div>
