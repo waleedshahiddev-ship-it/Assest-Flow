@@ -40,11 +40,17 @@ export const managerOnboardingForm = {
     description: "Confirm your profile details to continue.",
     submitLabel: "Continue",
     fields: [
-        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true },
-        { name: "email", label: "Email", type: "email" },
+        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true, hidden: true },
+        { name: "companyId", label: "Company ID", type: "text", readOnly: true, hidden: true },
+        { name: "email", label: "Email", type: "email", readOnly: true },
         { name: "fullName", label: "Full Name", type: "text" },
         { name: "role", label: "Role", type: "text", readOnly: true },
-        { name: "token", label: "Invite Token", type: "text", readOnly: true },
+        { name: "companyName", label: "Company Name", type: "text", readOnly: true },
+        { name: "companyLocation", label: "Company Location", type: "text", readOnly: true },
+        { name: "department", label: "Department", type: "text" },
+        { name: "managerLevel", label: "Manager Level", type: "text" },
+        { name: "phone", label: "Phone", type: "text" },
+        { name: "token", label: "Invite Token", type: "text", readOnly: true, hidden: true },
     ],
 }
 
@@ -53,11 +59,16 @@ export const employeeOnboardingForm = {
     description: "Confirm your profile details to continue.",
     submitLabel: "Continue",
     fields: [
-        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true },
-        { name: "email", label: "Email", type: "email" },
+        { name: "clerkId", label: "Clerk ID", type: "text", readOnly: true, hidden: true },
+        { name: "companyId", label: "Company ID", type: "text", readOnly: true, hidden: true },
+        { name: "email", label: "Email", type: "email", readOnly: true },
         { name: "fullName", label: "Full Name", type: "text" },
         { name: "role", label: "Role", type: "text", readOnly: true },
-        { name: "token", label: "Invite Token", type: "text", readOnly: true },
+        { name: "companyName", label: "Company Name", type: "text", readOnly: true },
+        { name: "department", label: "Department", type: "text", readOnly: true },
+        { name: "jobTitle", label: "Job Title", type: "text" },
+        { name: "location", label: "Location", type: "text" },
+        { name: "token", label: "Invite Token", type: "text", readOnly: true, hidden: true },
     ],
 }
 

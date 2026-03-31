@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Typography } from "@mui/material";
 import { getCompanyDetailsBasedOnToken } from "../services/apiOnboarding"
 import { useOnboarding } from "@/context/OnboardingContext";
+import { useMemo } from "react";
 
 
 const ALLOWED_ROLES = ["employer", "admin", "manager", "employee"]
@@ -22,7 +23,7 @@ const Onboarding = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const userId = user?.id;
-    const { token } = useOnboarding()
+    const { token, clearOnboardingData } = useOnboarding()
 
     const normalizedRole = (role || "").toLowerCase();
     const roleSchema = schemas[normalizedRole];
@@ -41,6 +42,7 @@ const Onboarding = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["onboarding"] });
             queryClient.invalidateQueries({ queryKey: ["onboardingStatus"] });
+            clearOnboardingData();
             navigate("/");
         },
         onError: (err) => {
@@ -59,30 +61,38 @@ const Onboarding = () => {
         enabled: shouldFetchCompanyDetails,
     })
 
-    const defaultValues = isEmployer
-        ? {
-            clerkId: user?.id || "",
-            email: user?.emailAddresses?.[0]?.emailAddress || "",
-            fullName: user?.fullName || "",
-            role: normalizedRole,
-            companyName: "",
-            industry: "",
-            companySize: "",
-            website: "",
-            location: "",
-            phone: "",
-        }
-        : {
-            clerkId: user?.id || "",
-            companyId: companyData?.id || "", 
-            email: user?.emailAddresses?.[0]?.emailAddress || "",
-            fullName: user?.fullName || "",
-            role: normalizedRole,
-            phone: "",
-            title: "",
-            companyName: companyData?.name || "",
-            companyLocation: companyData?.location || "",
-        }
+    const defaultValues = useMemo(() => (
+        isEmployer
+            ? {
+                clerkId: user?.id || "",
+                email: user?.emailAddresses?.[0]?.emailAddress || "",
+                fullName: user?.fullName || "",
+                role: normalizedRole,
+                companyName: "",
+                industry: "",
+                companySize: "",
+                website: "",
+                location: "",
+                phone: "",
+                token: "",
+            }
+            : {
+                clerkId: user?.id || "",
+                companyId: companyData?.id || "",
+                email: user?.emailAddresses?.[0]?.emailAddress || "",
+                fullName: user?.fullName || "",
+                role: normalizedRole,
+                phone: "",
+                title: "",
+                department: normalizedRole === "employee" ? (companyData?.inviterDepartment || "") : "",
+                managerLevel: "",
+                jobTitle: "",
+                location: normalizedRole === "employee" ? (companyData?.location || "") : "",
+                companyName: companyData?.name || "",
+                companyLocation: companyData?.location || "",
+                token: token || "",
+            }
+    ), [isEmployer, user?.id, user?.emailAddresses, user?.fullName, normalizedRole, companyData, token])
 
 
 
@@ -90,6 +100,18 @@ const Onboarding = () => {
         if (!isLoaded || !user) {
             console.error("User not loaded yet");
             return;
+        }
+
+        const clerkEmail = (user?.emailAddresses?.[0]?.emailAddress || "").trim().toLowerCase()
+        const submittedEmail = (values.email || "").trim().toLowerCase()
+        if (!clerkEmail || clerkEmail !== submittedEmail) {
+            toast.error("You must onboard with the same email as your logged-in Clerk account")
+            return
+        }
+
+        if (!isEmployer && (!values.token || values.token !== token)) {
+            toast.error("Invalid onboarding token context. Please reopen your invitation link.")
+            return
         }
 
         toast("You submitted the following values:", {
@@ -184,7 +206,9 @@ const Onboarding = () => {
             />
 
             {mutation.isError && (
-                <p className="mt-4 text-sm text-red-600">{mutation.error?.message || "Onboarding failed"}</p>
+                <div className="mt-4 max-w-xl w-full rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 break-words">
+                    {mutation.error?.message || "Onboarding failed"}
+                </div>
             )}
         </div>
     );

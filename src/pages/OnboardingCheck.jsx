@@ -13,7 +13,7 @@ const OnboardingCheck = () => {
     const { isSignedIn, isLoaded, user } = useUser()
     const userEmail = user?.emailAddresses?.[0]?.emailAddress
 
-    const { role, token } = useOnboarding()
+    const { role, token, clearOnboardingData } = useOnboarding()
 
     const onboardingQuery = useQuery({
         queryKey: ["onboardingStatus", user?.id],
@@ -33,6 +33,20 @@ const OnboardingCheck = () => {
             onboardingQuery.isSuccess &&
             !onboardingQuery.data?.onboarding,
     })
+
+    const inviteValidationMessage =
+        role && token && inviteQuery.isSuccess && inviteQuery.data && !inviteQuery.data.valid
+            ? inviteQuery.data.message
+            : ""
+
+    const inviteQueryErrorMessage =
+        role && token && inviteQuery.isError
+            ? (inviteQuery.error?.message || "Error occurred while checking invite token")
+            : ""
+
+    const onboardingErrorMessage = onboardingQuery.isError
+        ? "Failed to check onboarding status"
+        : ""
 
 
     useEffect(() => {
@@ -54,6 +68,7 @@ const OnboardingCheck = () => {
 
         if (onboardingQuery.data?.onboarding) {
             // if the user has already completed onboarding, redirect to home
+            clearOnboardingData()
             navigate("/")
             return
         }
@@ -99,6 +114,7 @@ const OnboardingCheck = () => {
         navigate,
         role,
         token,
+        clearOnboardingData,
         onboardingQuery.isLoading,
         onboardingQuery.isError,
         onboardingQuery.data,
@@ -109,9 +125,20 @@ const OnboardingCheck = () => {
     ])
 
     return (
-        <div className="flex items-center justify-center h-screen">
-            <div>Verifying your account...</div>
-            <div>Redirecting to the onboarding page...</div>
+        <div className="flex items-center justify-center h-screen px-4">
+            <div className="space-y-2 text-center max-w-xl w-full rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <div>Verifying your account...</div>
+                <div>Redirecting to the onboarding page...</div>
+                {onboardingErrorMessage && (
+                    <div className="text-sm text-red-600 break-words">{onboardingErrorMessage}</div>
+                )}
+                {inviteValidationMessage && (
+                    <div className="text-sm text-red-600 break-words">{inviteValidationMessage}</div>
+                )}
+                {inviteQueryErrorMessage && (
+                    <div className="text-sm text-red-600 break-words">{inviteQueryErrorMessage}</div>
+                )}
+            </div>
         </div>
     )
 }

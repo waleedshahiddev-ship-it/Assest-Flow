@@ -8,7 +8,7 @@ const Login = () => {
                 <div className="hidden md:flex flex-col justify-center pl-6">
                     <div className="mb-6">
                         <h1 className="text-4xl font-extrabold text-indigo-700">Asset Flow</h1>
-                        <p className="mt-3 text-lg text-gray-700">Manage your company's assets efficiently, reliably, and securely.</p>
+                        <p className="mt-3 text-lg text-gray-700">Secure sign in for role-based asset operations and onboarding.</p>
                     </div>
                     <div className="mt-6 text-sm text-gray-500 space-y-3">
                         <p className="flex items-start"><span className="mr-2 text-indigo-500">•</span>Centralized asset management</p>
@@ -25,8 +25,8 @@ const Login = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-semibold text-gray-800">Welcome to Asset Flow</h2>
-                            <p className="text-sm text-gray-500 mt-2">Sign in to continue to your dashboard</p>
+                            <h2 className="text-2xl font-semibold text-gray-800">Welcome back</h2>
+                            <p className="text-sm text-gray-500 mt-2">Sign in to continue to your workspace.</p>
                         </div>
 
                         <div className="space-y-4">

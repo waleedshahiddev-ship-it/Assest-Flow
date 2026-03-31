@@ -30,6 +30,20 @@ export const OnboardingForm = ({ schema, uiConfig, defaultValues = {}, onSubmit,
         defaultValues
     })
 
+    const previousDefaultsRef = React.useRef(JSON.stringify(defaultValues))
+
+    React.useEffect(() => {
+        const defaultsSnapshot = JSON.stringify(defaultValues)
+        if (defaultsSnapshot === previousDefaultsRef.current) return
+
+        // Do not wipe user input when they are actively editing the form.
+        if (!form.formState.isDirty) {
+            form.reset(defaultValues)
+        }
+
+        previousDefaultsRef.current = defaultsSnapshot
+    }, [form, defaultValues, form.formState.isDirty])
+
 
     return (
         <Card className="w-full sm:max-w-md">

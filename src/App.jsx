@@ -20,6 +20,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { OnboardingProvider } from './context/OnboardingContext'
 import Invites from './pages/Invites'
 import InviteEmployer from './pages/InviteEmployer'
+import InviteAdmin from './pages/InviteAdmin'
+import InviteManager from './pages/InviteManager'
 import AdminAcceptInvitation from './pages/AdminAcceptInvitation'
 
 const theme = createTheme()
@@ -97,6 +99,8 @@ const App = () => {
                     <Route path="home" element={<Home />} />
                     <Route path="invites" element={<Invites />} />
                     <Route path="invites/employer" element={<InviteEmployer />} />
+                    <Route path="invites/admin" element={<InviteAdmin />} />
+                    <Route path="invites/manager" element={<InviteManager />} />
 
                   </Route>
                 </Routes>

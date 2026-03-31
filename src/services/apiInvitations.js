@@ -1,4 +1,3 @@
-import { data } from "react-router-dom"
 import { supabase } from "./supabase"
 
 
@@ -41,7 +40,7 @@ export async function getCompanyDetails(userId) {
 
 
         if (userError) {
-            throw new Error("Error while checking the company details based on the user id ", error.message)
+            throw new Error("Error while checking the company details based on the user id: " + userError.message)
         }
 
         const company_id = user.company_id
@@ -55,7 +54,7 @@ export async function getCompanyDetails(userId) {
             .single()
 
         if (companyError) {
-            throw new Error("Error while checking the company details based on the user id ", error.message)
+            throw new Error("Error while checking the company details based on the user id: " + companyError.message)
         }
 
         return {
@@ -65,7 +64,7 @@ export async function getCompanyDetails(userId) {
         }
 
     } catch (error) {
-        throw new Error("Falied to get the company details", error.message)
+        throw new Error("Failed to get the company details: " + error.message)
     }
 }
 
@@ -77,63 +76,83 @@ function generateToken(length = 10) {
 }
 
 
-export async function sendAdminInvite(payload) {
-    try {
+const INVITABLE_ROLES = ["admin", "manager", "employee"]
 
-        const { clerkId, receipientEmail, companyId } = payload
-        // get the user id based on the clerk id 
+export async function sendRoleInvite(payload) {
+    try {
+        const { clerkId, receipientEmail, companyId, targetRole, senderRole } = payload
+
+        if (!clerkId || !receipientEmail || !companyId || !targetRole || !senderRole) {
+            throw new Error("Missing required invitation data")
+        }
+
+        const normalizedTargetRole = String(targetRole).toLowerCase()
+        if (!INVITABLE_ROLES.includes(normalizedTargetRole)) {
+            throw new Error("Invalid target role for invitation")
+        }
+
         const { data: user, error: userError } = await supabase
             .from("users")
-            .select("*")
+            .select("id")
             .eq("clerk_id", clerkId)
             .single()
 
-        if (userError) {
-            console.log("User in checking user")
-            // throw new Error("Error while sending the admin invitation")
+        if (userError || !user) {
+            throw new Error("Error while finding sender user: " + (userError?.message || "unknown"))
         }
 
-        const senderId = user.id
         const token = generateToken()
         const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
-
-
-        // validate the data before creating a record 
-
-        if (!clerkId || !receipientEmail || !companyId) {
-
-            console.log("Data from frontend not available")
-            // throw new Error("Error while sending the admin invitation")
-        }
-
 
         const { data: invitation, error: invitationError } = await supabase
             .from("invitations")
             .insert({
-                email: receipientEmail,
-                role: "admin",
+                email: receipientEmail.trim().toLowerCase(),
+                role: normalizedTargetRole,
                 company_id: companyId,
                 token,
                 status: "pending",
                 expire_at: expiresAt,
-                sender_role: "employer",
-                sender_id: senderId
+                sender_role: String(senderRole).toLowerCase(),
+                sender_id: user.id
             })
             .select()
             .single()
 
-        if (invitationError) {
-            console.log("Invitation not generated")
-            throw new Error("Error while sending the admin invitation")
+        if (invitationError || !invitation) {
+            throw new Error("Error while creating invitation: " + (invitationError?.message || "unknown"))
         }
 
         return { success: true, data: invitation }
-
     } catch (error) {
         console.log(error)
-        throw new Error("Error while sending the admin invitation", error)
-
+        throw new Error("Error while sending the invitation: " + error.message)
     }
+}
+
+
+export async function sendAdminInvite(payload) {
+    return sendRoleInvite({
+        ...payload,
+        targetRole: "admin",
+        senderRole: "employer",
+    })
+}
+
+export async function sendManagerInvite(payload) {
+    return sendRoleInvite({
+        ...payload,
+        targetRole: "manager",
+        senderRole: "admin",
+    })
+}
+
+export async function sendEmployeeInvite(payload) {
+    return sendRoleInvite({
+        ...payload,
+        targetRole: "employee",
+        senderRole: "manager",
+    })
 }
 
 
@@ -170,24 +189,28 @@ export async function validateTokenStatus(token) {
             .from("invitations")
             .select("*")
             .eq("token", token)
-            .single()
+            .maybeSingle()
 
 
         if (tokenError) {
-            throw new Error("Error ", tokenError)
+            throw new Error("Error while validating token: " + tokenError.message)
         }
 
         if (!tokenData) {
             return { validate: false, message: "Invalid token" }
         }
 
-        if (tokenData.status === "used") {
+        if (tokenData.status !== "pending") {
             return { validate: false, message: "Token is used already" }
+        }
+
+        if (!tokenData.expire_at || new Date(tokenData.expire_at) <= new Date()) {
+            return { validate: false, message: "Token is expired" }
         }
 
         return { validate: true, message: "Token is valid" }
 
     } catch (error) {
-        throw new Error("Error while checking the token status", error)
+        throw new Error("Error while checking the token status: " + error.message)
     }
 }
