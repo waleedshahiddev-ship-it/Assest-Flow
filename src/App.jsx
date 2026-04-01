@@ -23,6 +23,7 @@ import InviteEmployer from './pages/InviteEmployer'
 import InviteAdmin from './pages/InviteAdmin'
 import InviteManager from './pages/InviteManager'
 import AdminAcceptInvitation from './pages/AdminAcceptInvitation'
+import ProfileManagement from './pages/ProfileManagement'
 
 const theme = createTheme()
 const queryClient = new QueryClient()
@@ -98,6 +99,7 @@ const App = () => {
                     <Route index element={<Navigate replace to="/home" />} />
                     <Route path="home" element={<Home />} />
                     <Route path="invites" element={<Invites />} />
+                    <Route path="profile" element={<ProfileManagement />} />
                     <Route path="invites/employer" element={<InviteEmployer />} />
                     <Route path="invites/admin" element={<InviteAdmin />} />
                     <Route path="invites/manager" element={<InviteManager />} />
