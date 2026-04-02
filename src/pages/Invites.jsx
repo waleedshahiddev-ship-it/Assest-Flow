@@ -21,6 +21,10 @@ const Invites = () => {
 
   useEffect(() => {
     if (!isLoading && data) {
+      if (data === "employee") {
+        navigate("/home")
+        return
+      }
       navigate(`/invites/${data}`)
     }
   }, [isLoading, data, navigate])
