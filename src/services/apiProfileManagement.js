@@ -141,6 +141,8 @@ export async function updateProfile(clerkId, role, updates) {
     else if (role === "manager") tableName = "manager_profiles";
     else if (role === "employee") tableName = "employee_profiles";
 
+    console.log(profileUpdates)
+
     if (tableName && Object.keys(profileUpdates).length > 0) {
       const { error: profileError } = await supabase
         .from(tableName)
