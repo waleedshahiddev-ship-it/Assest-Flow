@@ -24,6 +24,12 @@ import InviteAdmin from './pages/InviteAdmin'
 import InviteManager from './pages/InviteManager'
 import AdminAcceptInvitation from './pages/AdminAcceptInvitation'
 import ProfileManagement from './pages/ProfileManagement'
+import Projects from './pages/Projects'
+import ProjectsManager from './pages/ProjectsManager'
+import ProjectsEmployee from './pages/ProjectsEmployee'
+import AddProject from './pages/AddProject'
+import Unauthorized from './pages/Unauthorized'
+import ProjectDetailsManager from './pages/ProjectDetailsManager'
 
 const theme = createTheme()
 const queryClient = new QueryClient()
@@ -100,6 +106,13 @@ const App = () => {
                     <Route path="home" element={<Home />} />
                     <Route path="invites" element={<Invites />} />
                     <Route path="profile" element={<ProfileManagement />} />
+                    <Route path="projects" element={<Projects />} />
+                    <Route path="projects/manager" element={<ProjectsManager />} />
+                    <Route path="projects/manager/:projectId" element={<ProjectDetailsManager />} />
+                    <Route path="projects/employee" element={<ProjectsEmployee />} />
+                    <Route path="projects/manager/add-project" element={<AddProject />} />
+                    <Route path="projects/:role" element={<Projects />} />
+                    <Route path="unauthorized" element={<Unauthorized />} />
                     <Route path="invites/employer" element={<InviteEmployer />} />
                     <Route path="invites/admin" element={<InviteAdmin />} />
                     <Route path="invites/manager" element={<InviteManager />} />

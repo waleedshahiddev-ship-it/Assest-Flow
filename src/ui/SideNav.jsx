@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
+import { useUser } from '@clerk/react'
+import { useQuery } from '@tanstack/react-query'
 import LogoutButton from './LogoutButton'
-import { Separator } from '../components/ui/separator'
+import { getCurrentUserRoleByClerkId } from '../services/apiProjects'
 
 const navItems = [
   { 
@@ -30,9 +32,40 @@ const navItems = [
       </svg>
     ) 
   },
+  {
+    to: "projects",
+    label: "Projects",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h3l2 2h9a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+      </svg>
+    )
+  },
 ]
 
 export default function SideNav({ onNavigate }) {
+  const { user, isLoaded } = useUser()
+
+  const roleQuery = useQuery({
+    queryKey: ['sidenav-role', user?.id],
+    queryFn: () => getCurrentUserRoleByClerkId(user.id),
+    enabled: isLoaded && !!user?.id,
+  })
+
+  const currentRole = roleQuery.data
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.to !== 'projects') return true
+    return currentRole === 'manager' || currentRole === 'employee'
+  })
+
+  const getNavTarget = (itemTo) => {
+    if (itemTo !== 'projects') return itemTo
+    if (currentRole === 'manager') return 'projects/manager'
+    if (currentRole === 'employee') return 'projects/employee'
+    return 'projects'
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-900 text-slate-300">
       <div className="flex h-16 items-center px-6 bg-slate-900 border-b border-slate-800/50">
@@ -50,10 +83,10 @@ export default function SideNav({ onNavigate }) {
         <div className="mb-4">
           <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Management</p>
         </div>
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink
             key={item.to}
-            to={item.to}
+            to={getNavTarget(item.to)}
             onClick={onNavigate}
             className={({ isActive }) => 
               `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
